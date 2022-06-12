@@ -422,10 +422,10 @@ class OntobuilderUI(QMainWindow):
                 file = open(fileName[0],'w')
                 for l in [(s, p, o) for s, p, o in self.ontology_graph.match(None, None, None)]:
                     file.write(' '.join(str(s) for s in l) + '\n')
-                    file.close()
+                    
             except FileNotFoundError:
                 print('You have not selected a file to save or file was not found')
-            
+            file.close()
 
 
     def onVisualizeSelected(self, val):

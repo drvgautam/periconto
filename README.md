@@ -10,8 +10,10 @@ CONTO stands for coating ontologies.
 
 
 # how to use PERICONTO_0.1 (instructions to run the program are based on LiNUX OS, the user can adapt them as per her/his OS)
-    STEP-1: Go to the directory PERICONTO_0.1 and create a virtual invironment as following (there was some unresolvable errors with with the python version3.8
-     and PyQtWebEngine that comes packaged with the python =>3.5. It has been tested to work with python, so facing an error create the virtual environment with python3.6)
+
+    #The program has been tested on Ubuntu 18.04 with the the Python3.8.5 and the latest Python version Python3.10. Under Python 3.10, an error relatd to Qt plateform plugin 'xcb' occured, which was resolved by installing libxcb-xinerama0 ($sudo apt-get install libxcb-xinerama0)
+
+    STEP-1: Go to the directory PERICONTO_0.1 and create a virtual invironment as following 
         $ python3 -m venv .venv
         $ source .venv/bin/activate
     STEP-2: Install dependencies (there was an unresolvable error with the package PyQtWebEngine,tested in Python 3.6)
@@ -27,20 +29,23 @@ CONTO stands for coating ontologies.
     # visualizaton user interface can be opened from the perconto ui or it can independently launched by running the script (pythons ontovis.py)
     # Currently, the ontovis is set to deafult (nx.html, which is converted from a ontology in a turtle format)  
 
-── coatingOntology
-│   ├── cfo_new.ttl
-│   ├── cfo_triples.txt
-│   ├── cfo.ttl
-│   └── new_file.txt
-├── nx.html
-└── src
-    ├── graph.py
-    ├── ontobuild.py
-    ├── ontologybuilder_gui.py
-    ├── ontologybuilder_gui.ui
-    ├── ontovis.py
-    ├── README.txt
-    └── requirements.txt
+
+
+        periconto_0.1
+        ├── coatingOntology
+        │   ├── cfo_ver01.ttl
+        │   └── cfo_ver01.txt
+        ├── nx.html
+        ├── README.md
+        └── src
+            ├── graph.py
+            ├── ontobuild.py
+            ├── ontologybuilder_gui.py
+            ├── ontologybuilder_gui.ui
+            ├── ontovis.py
+            └── requirements.txt
+
+
 
 
 # What one can do with the periconto?
