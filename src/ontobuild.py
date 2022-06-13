@@ -131,15 +131,29 @@ class OntobuilderUI(QMainWindow):
     '''
     def build_tree(self, data=None, parent=None):
         # initialize root of the tree
+        
         for key, value in data.items():
-            item = QTreeWidgetItem(parent)
+            item = QtWidgets.QTreeWidgetItem(parent)
             item.setText(0, key)
             if isinstance(value, dict):
                 self.build_tree(data=value, parent=item)
 
-    def make_treewidget(self, data, widget):
+    # dictkey differentiate between the cases of making tree on loading data and when creating ontology
+    def make_treewidget(self, dict_data, widget, root, dictKey = None):
         widget.clear()
-        self.build_tree(data, widget.invisibleRootItem())
+        root = 'root'
+
+        if dictKey is None:
+            data = dict_data
+        else:
+            data = dict_data[dictKey]
+
+        rootItem = QtWidgets.QTreeWidgetItem(None, None)
+        rootItem.root = root
+        rootItem.setText(0, root) 
+        rootItem.setSelected(True)
+        widget.addTopLevelItem(rootItem)
+        self.build_tree(data, rootItem)
         widget.expandAll()
 
 
@@ -396,7 +410,7 @@ class OntobuilderUI(QMainWindow):
             options |= QFileDialog.DontUseNativeDialog
             fileName = QFileDialog.getOpenFileName(None,"Load Ontology", '../coatingOntology', "","Turtle files (*.ttl)", options=options)
 
-
+            self.ontology_root = 'root'
             tree = self.ui.treeWidget
             tree.setColumnCount(1)
 
@@ -404,10 +418,18 @@ class OntobuilderUI(QMainWindow):
             # TODO: likewise, one can get lists of tuples with other relations (predicates) if desired.  
     
             og = self.create_ontograph(fileName[0])
+            tupslist_isaclass = [(o, s) for s, _, o in og.match(None, 'isA', 'Class')]
             tupslist_subclassof = [(o,s) for s, _, o in og.match(None, 'subClassOf', None)]
+            tupslist_classsubclass = tupslist_isaclass+tupslist_subclassof
+            print('Tuples list isA...', tupslist_isaclass)
+            print('Tuples list subcassof ...', tupslist_subclassof)
+            print('Tuples list class-subclass...', tupslist_classsubclass)
             #tups_list = self.get_tupleslist(fileName[0])
-            ns_dict = self.nested_dictionary(tupslist_subclassof) 
-            self.make_treewidget(ns_dict, tree)
+            ns_dict = self.nested_dictionary(tupslist_classsubclass)
+            pprint.pprint(ns_dict, width=1)
+
+            #pass the dictKey = 'Class' so that the Class node is not rendered in the treeWidget 
+            self.make_treewidget(ns_dict, tree, self.ontology_root, dictKey='Class')
             self.ontology_graph = og
             # current_tree = self.build_tree(data=ns_dict, parent=tree)
             # self.current_tree = self.build_tree(data=ns_dict, parent=tree)
@@ -439,7 +461,7 @@ class OntobuilderUI(QMainWindow):
             self.ui.treeWidget.clear()
             self.ui.treeWidget.setColumnCount(1)
             print('create ontology selected')
-            self.ontology_root = 'cfo'
+            self.ontology_root = 'root'
             item = QTreeWidgetItem(self.ui.treeWidget)
             item.setText(0, self.ontology_root)
             self.ontology_graph = Graph()
@@ -454,13 +476,18 @@ class OntobuilderUI(QMainWindow):
         ontograph = self.ontology_graph
 
         try:
-            triplesList = [(o,s) for s, _, o in ontograph.match(None, 'subClassOf', None)]
+            # triplesList = [(o,s) for s, _, o in ontograph.match(None, 'subClassOf', None)]
+
+            tupslist_isaclass = [(o, s) for s, _, o in ontograph.match(None, 'isA', 'Class')]
+            tupslist_subclassof = [(o,s) for s, _, o in ontograph.match(None, 'subClassOf', None)]
+            tupslist_classsubclass = tupslist_isaclass+tupslist_subclassof
+        
         except AttributeError:
             print('The root is subclass of None')
         #print(triplesList)
 
         try:
-            clicked_path_list = ontograph.path(self.clicked_item, 'cfo')
+            clicked_path_list = ontograph.path(self.clicked_item, 'root')
             clicked_path = os.path.join(*clicked_path_list)
         except AttributeError:
             print('This is root node')
@@ -468,18 +495,19 @@ class OntobuilderUI(QMainWindow):
 
         # To handle the deafult case while creating ontology
         # Initially there are no triples in the graph
-        if not triplesList:
-            self.ui.pushAddSubclass.setEnabled(True)
+        if not tupslist_classsubclass:
+            self.ui.pushAddSubclass.setEnabled(False)
+            self.ui.pushAddClass.setEnabled(True)
 
-        for item in triplesList:
+        for item in tupslist_classsubclass:
             # The add class option is enabled only when root is is selected
-            if self.clicked_item == 'cfo':
+            if self.clicked_item == 'root':
                 # self.ui.pushAddSubclass.setEnabled(True)
-                self.ui.pushAddClass.setEnabled(False)
-                self.ui.pushAddSubclass.setEnabled(True)
+                self.ui.pushAddClass.setEnabled(True)
+                self.ui.pushAddSubclass.setEnabled(False)
                 self.ui.pushRemoveNode.setEnabled(False)
             
-            if self.clicked_item == item[1] and item[0] == 'cfo':
+            if self.clicked_item == item[1] and item[0] == 'Class':
 
                 self.ui.pushAddClass.setEnabled(False)
                 self.ui.pushAddSubclass.setEnabled(True)
@@ -531,7 +559,7 @@ class OntobuilderUI(QMainWindow):
             ns_dict = self.nested_dictionary(tupslist_subclassof) 
             print('This is nested dictionary....', ns_dict)
             # self.ui.treeWidget.clear()
-            self.make_treewidget(ns_dict, self.ui.treeWidget)
+            self.make_treewidget(ns_dict, self.ui.treeWidget, self.ontology_root)
             
 
     def on_pushAddClass_pressed(self):   
@@ -540,13 +568,25 @@ class OntobuilderUI(QMainWindow):
 
         if ok:
             print('item clicked:', self.clicked_item)
-            self.ontology_graph.append((text, 'subClassOf', 'cfo'))
+            self.ontology_graph.append((text, 'isA', 'Class'))
+            tupslist_subclassof = [(o,s) for s, _, o in self.ontology_graph.match(None, 'isA', None)]
+
+            tupslist_isaclass = [(o, s) for s, _, o in self.ontology_graph.match(None, 'isA', 'Class')]
             tupslist_subclassof = [(o,s) for s, _, o in self.ontology_graph.match(None, 'subClassOf', None)]
-            print('this is add list', tupslist_subclassof)
-            ns_dict = self.nested_dictionary(tupslist_subclassof) 
-            print(ns_dict)
+            tupslist_classsubclass = tupslist_isaclass+tupslist_subclassof
+            print('Tuples list isA...', tupslist_isaclass)
+            print('Tuples list subcassof ...', tupslist_subclassof)
+            print('Tuples list class-subclass...', tupslist_classsubclass)
+            #tups_list = self.get_tupleslist(fileName[0])
+            ns_dict = self.nested_dictionary(tupslist_classsubclass)
+            pprint.pprint(ns_dict, width=1)
+
+
+            # print('this is add list', tupslist_subclassof)
+            # ns_dict = self.nested_dictionary(tupslist_subclassof) 
+            # print(ns_dict)
             # self.ui.treeWidget.clear()
-            self.make_treewidget(ns_dict, self.ui.treeWidget)
+            self.make_treewidget(ns_dict, self.ui.treeWidget, self.ontology_root, dictKey='Class')
             
     #TODO: remove option is currently disable by setting flag to False. This needs to be fixed!
     def on_pushRemoveNode_pressed(self):
@@ -560,7 +600,7 @@ class OntobuilderUI(QMainWindow):
         ns_dict = self.nested_dictionary(tupslist_subclassof) 
         print(ns_dict)
         # self.ui.treeWidget.clear()
-        self.make_treewidget(ns_dict, self.ui.treeWidget)
+        self.make_treewidget(ns_dict, self.ui.treeWidget, self.ontology_root)
             
     
 

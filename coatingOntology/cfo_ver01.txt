@@ -1,4 +1,4 @@
-coatedSystem subClassOf cfo
+coatedSystem isA Class
 substrate subClassOf coatedSystem
 preTreatedSurface subClassOf coatedSystem
 coatingLayer subClassOf coatedSystem
@@ -13,6 +13,7 @@ additive subClassOf coatingLayer
 pigment takesRoleOf colour
 pigment takesRoleOf protectiv
 
+material isA Class
 colour relatesToClass material
 protectiv relatesToClass material
 defoamer relatesToClass material
@@ -32,7 +33,6 @@ addtive takesRoleOf catalyst
 additive takesRoleOf preservative
 additive takesRoleOf lightStabilizer
 
-material subClassOf cfo
 organic subClassOf material
 inorganic subClassOf material
 solid subClassOf material
@@ -52,7 +52,7 @@ Fe2O3 isA solid
 TiO2 hasStructure rutile
 TiO2 hasStructure anatase
 
-process subClassOf cfo
+process isA Class
 process relatesToClass substrate
 process relatesToClass preTreatedSurface
 process relatesToClass coatingLayer
