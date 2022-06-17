@@ -587,6 +587,7 @@ class OntobuilderUI(QMainWindow):
             # print(ns_dict)
             # self.ui.treeWidget.clear()
             self.make_treewidget(ns_dict, self.ui.treeWidget, self.ontology_root, dictKey='Class')
+
             
     #TODO: remove option is currently disable by setting flag to False. This needs to be fixed!
     def on_pushRemoveNode_pressed(self):
