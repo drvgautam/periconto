@@ -7,31 +7,27 @@
 import os
 import pprint
 
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtGui
 # from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import *
 
 from graph import Graph
 from ontologybuilderHAP_gui import Ui_MainWindow
 from resources.resources_icons import roundButton
+from resources.ui_string_dialog_impl import UI_String
 
+ROOT_CLASS = "coating"
+PREDICATES = {"subclass": "is_a_subclass_of",
+              "link" : "link_to_class"}
+LINK_COLOUR = QtGui.QColor(255, 100, 5, 255)
 
 class OntobuilderUI(QMainWindow):
   def __init__(self):
     super(OntobuilderUI, self).__init__()
-    # uic.loadUi("ontologybuilder_gui.ui", self)
     self.ui = Ui_MainWindow()
     self.ui.setupUi(self)
 
     self.ontology_graph = None
-
-    # set ontology_root as None. Currently, ontology root node is named cfo (Coating Formulation Ontology)
-    # cfo is is currently set as a prefix in ontology file
-    # while creating ontology from scratch,self.ontology_root is assigned 'cfo' as root node
-    # subsequent classes and subclasses are added to create ontology
-
-    # TODO a user given name is set as root node of ontology tree
-
     self.ontology_root = None
 
     roundButton(self.ui.pushLoad, "load", tooltip="load ontology")
@@ -40,24 +36,78 @@ class OntobuilderUI(QMainWindow):
     roundButton(self.ui.pushSave, "save", tooltip="save ProMo base ontology")
     roundButton(self.ui.pushExit, "exit", tooltip="exit")
 
-    self.ui.pushSave.hide()
-    self.ui.pushVisualise.hide()
+    self.buttons = {"load" : self.ui.pushLoad,
+               "create": self.ui.pushCreate,
+               "visualise": self.ui.pushVisualise,
+               "save" : self.ui.pushSave,
+               "exit": self.ui.pushExit,
+               "add_subclass" : self.ui.pushAddSubclass,
+               "link_new_class": self.ui.pushAddNewClass,
+               "link_existing_class": self.ui.pushAddExistingClass,
+               "remove": self.ui.pushRemoveNode
+               }
+    w = 150
+    h = 25
+    for i in ["add_subclass", "link_new_class",  "link_existing_class"]:
+      self.buttons[i].setFixedSize(w,h)
 
-    coating = Graph()
-    coating.clear()
-    coating.append(('substrate', 'is-a', 'coating'))
-    coating.append(('pre-treatement', 'is-a', 'coating'))
-    coating.append(('coating-layer', 'is-a', 'coating'))
-    coating.append(('interface', 'is-a', 'coating'))
-    coating.append(('pigment', 'is-a', 'coating-layer'))
-    coating.append(('extender', 'is-a', 'coating-layer'))
-    coating.append(('dye', 'is-a', 'coating-layer'))
-    coating.append(('additive', 'is-a', 'coating-layer'))
-    coating.append(('defoamer', 'is-a', 'additive'))
-    coating.append(('wetting', 'is-a', 'additive'))
-    self.coating = coating
 
-    self.__createTree("coating")
+    self.ui_state("start")
+    self.current_class = None
+    self.current_subclass = None
+    self.subclass_names= {}
+    self.class_names = []
+    self.class_path = []
+    self.link_lists = {}
+
+    #
+    # coating = Graph()
+    # coating.clear()
+    # coating.append(('substrate', 'is-a', 'coating'))
+    # coating.append(('pre-treatement', 'is-a', 'coating'))
+    # coating.append(('coating-layer', 'is-a', 'coating'))
+    # coating.append(('interface', 'is-a', 'coating'))
+    # coating.append(('pigment', 'is-a', 'coating-layer'))
+    # coating.append(('extender', 'is-a', 'coating-layer'))
+    # coating.append(('dye', 'is-a', 'coating-layer'))
+    # coating.append(('additive', 'is-a', 'coating-layer'))
+    # coating.append(('defoamer', 'is-a', 'additive'))
+    # coating.append(('wetting', 'is-a', 'additive'))
+    # self.coating = coating
+    #
+    # self.__createTree("coating")
+
+  def ui_state(self, state):
+    if state == "start":
+      show = ["load",
+              "create",
+              "exit",
+              ]
+    elif state == "show tree":
+      show = ["save",
+              "create",
+              "exit",
+              ]
+    elif state == "selected_subclass":
+      show = ["save",
+              "exit",
+              "add_subclass",
+              "link_new_class",
+              "link_existing_class",
+              ]
+    elif state == "selected_class":
+      show = ["save",
+              "exit",
+              "add_subclass"
+              ]
+    else:
+      show = []
+
+    for b in self.buttons:
+      if b not in show:
+        self.buttons[b].hide()
+      else:
+        self.buttons[b].show()
 
   def __createTree(self, origin):
     widget = self.ui.treeClass
@@ -69,92 +119,85 @@ class OntobuilderUI(QMainWindow):
     rootItem.setText(0, origin)
     rootItem.setSelected(True)
     widget.addTopLevelItem(rootItem)
-    self.__makeTree(parent=rootItem)
+    self.current_class = origin
+    self.__makeTree(origin=origin, stack=[], parent=rootItem)
     widget.show()
     widget.expandAll()
 
   def __makeTree(self, origin=None, stack=[], parent=None):
 
-    for subject, _ , object in self.coating.match(None, None, origin):
+    graph = self.CLASSES[self.current_class]
+    for subject, predicate , object in graph.match(None, None, origin):
       if subject not in stack:
         print("add %s <-- %s"%(object,subject))
         item = QTreeWidgetItem(parent)
+        columns = item.columnCount()
+        if predicate == PREDICATES["link"]:
+          print("debugging columns ", columns)
+          item.setBackground(columns,LINK_COLOUR)
         item.setText(0, subject)
         stack.append(subject)
         self.__makeTree(origin=subject,stack=stack, parent=item)
 
+  def on_pushCreate_pressed(self):
+    self.CLASSES= {ROOT_CLASS: Graph()}
+    self.__createTree(ROOT_CLASS)
+    self.current_class = ROOT_CLASS
+    self.subclass_names[ROOT_CLASS] = []
+    self.class_names.append(ROOT_CLASS)
+    self.class_path = [ROOT_CLASS]
+    self.link_lists[ROOT_CLASS] = []
+
+    self.ui.listClasses.addItems(self.class_path)
+
+
   def on_treeClass_itemPressed(self, item, column):
     text_ID = item.text(column)
     print("debugging -- ", text_ID)
+    self.current_subclass = text_ID
+
+    if text_ID in self.class_names:
+      self.ui_state("selected_class")
+      if self.current_class != text_ID:
+        self.shiftClass(text_ID)
+    else:
+      self.ui_state("selected_subclass")
+      self.current_subclass = text_ID
 
 
-  def on_pushCreate_pressed(self):
-    self.classCoating = Graph()
-    self.classCoating
 
   def on_pushLoad_pressed(self):
     print("debugging")
-    options = QFileDialog.Options()
-    options |= QFileDialog.DontUseNativeDialog
-    fileName = QFileDialog.getOpenFileName(None, "Load Ontology", '../coatingOntology', "", "Turtle files (*.ttl)",
-                                           options=options)
+    # options = QFileDialog.Options()
+    # options |= QFileDialog.DontUseNativeDialog
+    # fileName = QFileDialog.getOpenFileName(None, "Load Ontology", '../coatingOntology', "", "Turtle files (*.ttl)",
+    #                                        options=options)
+    #
+    # self.ontology_root = 'root'
+    # tree = self.ui.treeClass
+    # tree.setColumnCount(1)
+    #
+    # # The tuples are of the form (o,s) that are filtered from (s, subClassOf, o)
+    # # TODO: likewise, one can get lists of tuples with other relations (predicates) if desired.
+    #
+    # og = self.create_ontograph(fileName[0])
+    # tupslist_isaclass = [(o, s) for s, _, o in og.match(None, 'isA', 'Class')]
+    # tupslist_subclassof = [(o, s) for s, _, o in og.match(None, 'subClassOf', None)]
+    # tupslist_classsubclass = tupslist_isaclass + tupslist_subclassof
+    # print('Tuples list isA...', tupslist_isaclass)
+    # print('Tuples list subcassof ...', tupslist_subclassof)
+    # print('Tuples list class-subclass...', tupslist_classsubclass)
+    # # tups_list = self.get_tupleslist(fileName[0])
+    # ns_dict = self.nested_dictionary(tupslist_classsubclass)
+    # pprint.pprint(ns_dict, width=1)
+    #
+    # # pass the dictKey = 'Class' so that the Class node is not rendered in the treeWidget
+    # self.make_treewidget(ns_dict, tree, self.ontology_root, dictKey='Class')
+    # self.ontology_graph = og
+    # # current_tree = self.build_tree(data=ns_dict, parent=tree)
+    # # self.current_tree = self.build_tree(data=ns_dict, parent=tree)
 
-    self.ontology_root = 'root'
-    tree = self.ui.treeClass
-    tree.setColumnCount(1)
 
-    # The tuples are of the form (o,s) that are filtered from (s, subClassOf, o)
-    # TODO: likewise, one can get lists of tuples with other relations (predicates) if desired.
-
-    og = self.create_ontograph(fileName[0])
-    tupslist_isaclass = [(o, s) for s, _, o in og.match(None, 'isA', 'Class')]
-    tupslist_subclassof = [(o, s) for s, _, o in og.match(None, 'subClassOf', None)]
-    tupslist_classsubclass = tupslist_isaclass + tupslist_subclassof
-    print('Tuples list isA...', tupslist_isaclass)
-    print('Tuples list subcassof ...', tupslist_subclassof)
-    print('Tuples list class-subclass...', tupslist_classsubclass)
-    # tups_list = self.get_tupleslist(fileName[0])
-    ns_dict = self.nested_dictionary(tupslist_classsubclass)
-    pprint.pprint(ns_dict, width=1)
-
-    # pass the dictKey = 'Class' so that the Class node is not rendered in the treeWidget
-    self.make_treewidget(ns_dict, tree, self.ontology_root, dictKey='Class')
-    self.ontology_graph = og
-    # current_tree = self.build_tree(data=ns_dict, parent=tree)
-    # self.current_tree = self.build_tree(data=ns_dict, parent=tree)
-
-
-  # def on_comboBox_activated(self, selection):
-  #
-  #   # self.show()
-  #
-  #   self.UiComboBox()
-  #
-  # def UiComboBox(self):
-  #   # self.comboBox = QComboBox(self)
-  #   # comboBox_action_list = ["load", "visualize", "save", "create", "select"]
-  #   # self.comboBox.addItems(comboBox_action_list)
-  #
-  #   self.ui.comboBox.activated[str].connect(self.onSelectSelected)
-  #   self.ui.comboBox.activated[str].connect(self.onVisualizeSelected)
-  #   self.ui.comboBox.activated[str].connect(self.onLoadSelected)
-  #   # self.comboBox.activated[str][str].connect(self.on_visualize)
-  #   self.ui.comboBox.activated[str][str].connect(self.onCreateSelected)
-  #   self.ui.comboBox.activated[str].connect(self.onSaveSelected)
-  #
-  #   self.ui.treeClass.itemClicked.connect(self.onItemClicked)
-  #   # self.ui.pushAddClass.clicked.connect(self.onAddSubclassClicked)
-  #
-  #   self.ui.pushAddClass.setEnabled(False)
-  #   self.ui.pushAddSubclass.setEnabled(False)
-  #   self.ui.pushRemoveNode.setEnabled(False)
-
-  #   open ontolog
-
-  # pass
-
-  # def print_test(self):
-  #     return 'This is working fine!'
 
   # method to load a ontology from a file and create ontology graph base on graph utility provided by Thomas
   def create_ontograph(self, onto_filename):
@@ -170,108 +213,98 @@ class OntobuilderUI(QMainWindow):
 
     return ontoGraph
 
-  # method to creare a nested dictionary from the list of tuples
-  #
-  '''
-  myTuplesList = [('a', 'b'), ('a','c'), ('a', 'd'), 
-                  ('c', 'e'), ('c', 'f'), ('c','g'), 
-                  ('c', 'h'), ('c', 'i'),
-                  ('c', 'j'), ('k','l'), ('k', 'm'), 
-                  ('k', 'n')]
-  nestedDict = {
-             'a':{
-                 'b': {},
-                 'c': {'e', 'f'},
-                 'd': {}
-              'k': {
-                  'l': {}, 
-                  'm': {},  
-                  'n': {}
-                   }
-                   }
-            }
-  '''
 
-  def nested_dictionary(self, data):
-    nested_dict, master_dict = {}, {}
-    for a, b in data:
-      if a not in master_dict:
-        nested_dict[a] = master_dict[a] = {}
-      master_dict[a][b] = master_dict[b] = {}
-    return nested_dict
 
-  # method to create coating ontology tree usingg QTreeWidget
-  '''
-  in args
-          : nested dictionary
-          :QTreeWidget (in our case, treeWidget object name from the Ui_MainWindow())
-  out: a visual view of the tree in a PyQt Widget
-  '''
+  def on_pushAddSubclass_pressed(self):
+    print("debugging -- add subclass")
+    parent_item = self.ui.treeClass.currentItem()
 
-  def build_tree(self, data=None, parent=None):
-    # initialize root of the tree
+    forbidden = sorted(self.subclass_names[self.current_class]) + sorted(self.class_names)
+    dialog = UI_String("name for subclass",limiting_list=forbidden)
+    dialog.exec_()
+    subclass_ID = dialog.getText()
+    self.subclass_names[self.current_class].append(subclass_ID)
+    self.CLASSES[self.current_class].append((subclass_ID, PREDICATES["subclass"], self.current_subclass))
+    item = QTreeWidgetItem(parent_item)
+    item.setText(0, subclass_ID)
 
-    for key, value in data.items():
-      item = QTreeWidgetItem(parent)
-      item.setText(0, key)
-      if isinstance(value, dict):
-        self.build_tree(data=value, parent=item)
+  def on_pushAddNewClass_pressed(self):
+    print("debugging -- add class")
 
-  # dictkey differentiate between the cases of making tree on loading data and when creating ontology
-  def make_treewidget(self, dict_data, widget, root, dictKey=None):
-    widget.clear()
-    root = 'root'
+    forbidden = sorted(self.class_names)
+    dialog = UI_String("name for subclass",limiting_list=forbidden)
+    dialog.exec_()
+    class_ID = dialog.getText()
 
-    if dictKey is None:
-      data = dict_data
+    # make link
+    self.CLASSES[self.current_class].append((class_ID,PREDICATES["link"], self.current_subclass))
+
+    self.CLASSES[class_ID] = Graph()
+    self.__createTree(class_ID)
+    self.current_class = class_ID
+    self.subclass_names[class_ID] = []
+    self.class_names.append(class_ID)
+    self.addToClassPath(addclass=class_ID)
+    if class_ID not in self.link_lists:
+      self.link_lists[class_ID] = []
+    self.link_lists[class_ID].append((class_ID, self.current_subclass))
+
+  def addToClassPath(self, addclass):
+    self.class_path.append(addclass)
+    self.ui.listClasses.clear()
+    self.ui.listClasses.addItems(self.class_path)
+
+
+  def cutClassPath(self, cutclass):
+    i = self.class_path.index(cutclass)
+    self.class_path = self.class_path[:i+1]
+    self.ui.listClasses.clear()
+    self.ui.listClasses.addItems(self.class_path)
+
+  def on_listClasses_itemDoubleClicked(self,item):
+    class_ID = item.text()
+    print("debugging -- ", class_ID)
+    self.shiftClass(class_ID)
+
+  def shiftClass(self, class_ID):
+    self.current_class = class_ID
+    self.__createTree(class_ID)
+    if class_ID not in self.class_path:
+      self.addToClassPath(class_ID)
     else:
-      data = dict_data[dictKey]
+      self.cutClassPath(class_ID)
 
-    rootItem = QTreeWidgetItem(None, None)
-    rootItem.root = root
-    rootItem.setText(0, root)
-    rootItem.setSelected(True)
-    widget.addTopLevelItem(rootItem)
-    self.build_tree(data, rootItem)
-    widget.expandAll()
+  def on_pushExistingClass_pressed(self):
+    print("debugging -- pushExistingClass")
 
-  # ....................................................####
-  # a more generic method to make tree
-  # the method mirorrs a dictionary (having dict, lists, class objects and others) as it.
-  # TODO: Nmay need some debugging to get it work
 
-  # def build_tree(self, value, item):
-  #     item.setExpanded(True)
-  #     if type(value) is dict:
-  #         for key, val in sorted(value.iteritems()):
-  #             child = QTreeWidgetItem()
-  #             child.setText(0, unicode(key))
-  #             item.addChild(child)
-  #             self.build_tree(child, val)
 
-  #     elif type(value) is list:
-  #         for val in value:
-  #             child = QTreeWidgetItem()
-  #             item.addChild(child)
-  #         if type(val) is dict:
-  #             child.setText(0, '[dict]')
-  #             self.build_tree(child, val)
-  #         elif type(val) is list:
-  #             child.setText(0, '[list]')
-  #             self.build_tree(child, val)
-  #         else:
-  #             child.setText(0, unicode(val))
-  #         child.setExpanded(True)
-  #     else:
-  #         child = QTreeWidgetItem()
-  #         child.setText(0, unicode(value))
-  #         item.addChild(child)
+  def closeEvent(self, event):
+    close = QMessageBox()
+    close.setText("You sure?")
+    close.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel | QMessageBox.Save)
+    close = close.exec()
 
-  # def make_treewidget(self, value, widget):
-  #     self.widget.clear()
-  #     build_tree(value, widget.invisibleRootItem())
+    if close == QMessageBox.Yes:
+      event.accept()
+    elif close == QMessageBox.Save:
+      self.onSaveSelected('save ontology')
+      event.accept()
+    else:
+      event.ignore()
 
-  # ........................................####
+
+  def on_pushAddClass_pressed(self):
+    print("debugging -- puschAddClass")
+
+  def on_pushSave_pressed(self):
+    print("debugging -- pushSave")
+
+    for cl in self.CLASSES:
+      graph = self.CLASSES[cl]
+      graph.write(cl)
+
+
 
   # def makeTreeView(treeWidget, ontology_tree):
   #   root = "root"  # RULE: root of tree is called "root"
@@ -383,19 +416,6 @@ class OntobuilderUI(QMainWindow):
   #         event.accept()
   #     else:
   #         event.ignore()
-  def closeEvent(self, event):
-    close = QMessageBox()
-    close.setText("You sure?")
-    close.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel | QMessageBox.Save)
-    close = close.exec()
-
-    if close == QMessageBox.Yes:
-      event.accept()
-    elif close == QMessageBox.Save:
-      self.onSaveSelected('save ontology')
-      event.accept()
-    else:
-      event.ignore()
 
   # def check_subpath(self, item):
   #     globalpath_list = self.ontology_graph.path(self.item, self.ontology_root)
@@ -420,11 +440,11 @@ class OntobuilderUI(QMainWindow):
   #         print('This is root node')
   #     print(clicked_path)
 
-  def addSubclassItem(self):
-    pass
-
-  def removeItem(self):
-    pass
+  # def addSubclassItem(self):
+  #   pass
+  #
+  # def removeItem(self):
+  #   pass
 
   # def onAddSubclassClicked(self):
   #     print('add subclass is clicked')
@@ -526,69 +546,75 @@ class OntobuilderUI(QMainWindow):
       else:
         pass
         # self.ui.pushRemoveNode.setEnabled(True)
+  #
+  # def on_pushAddSubclass_pressed(self):
+  #   print("debugging -- add subclass")
+  #
+  #   subclass_name =
+    # text, ok = QtWidgets.QInputDialog.getText(self, "Add sub class",
+    #                                           "Enter subclass name as one word f.ex coating system as coatingSystem: ")
+    # if ok:
+    #   print(type(self.clicked_item), type(text))
+    #   # print(len(self.ontology_graph))
+    #   # og = self.ontology_graph.append((text, 'subClassOf', self.clicked_item))
+    #   # tupslist_subclassof = [(o,s) for s, _, o in og.match(None, 'subClassOf', None)]
+    #   # #tups_list = self.get_tupleslist(fileName[0])
+    #   # ns_dict = self.nested_dictionary(tupslist_subclassof)
+    #   # self.build_tree(data=ns_dict, parent=self.ui.treeWidget)
+    #   # it = QTreeWidgetItem([text])
+    #   # self.ui.treeWidget.addChild(it)
+    #   ontograph = self.ontology_graph
+    #   # triplesList = [(o,s) for s, _, o in ontograph.match(None, 'subClassOf', None)]
+    #
+    #   self.ontology_graph.append((text, 'subClassOf', self.clicked_item))
+    #   tupslist_subclassof = [(o, s) for s, _, o in ontograph.match(None, 'subClassOf', None)]
+    #   print('this is add list', tupslist_subclassof)
+    #   ns_dict = self.nested_dictionary(tupslist_subclassof)
+    #   print('This is nested dictionary....', ns_dict)
+    #   # self.ui.treeWidget.clear()
+    #   self.make_treewidget(ns_dict, self.ui.treeWidget, self.ontology_root)
+  #
+  # def on_pushAddClass_pressed(self):
+  #   print("debugging -- puschAddClass")
 
-  def on_pushAddSubclass_pressed(self):
-    text, ok = QtWidgets.QInputDialog.getText(self, "Add sub class",
-                                              "Enter subclass name as one word f.ex coating system as coatingSystem: ")
-    if ok:
-      print(type(self.clicked_item), type(text))
-      # print(len(self.ontology_graph))
-      # og = self.ontology_graph.append((text, 'subClassOf', self.clicked_item))
-      # tupslist_subclassof = [(o,s) for s, _, o in og.match(None, 'subClassOf', None)]
-      # #tups_list = self.get_tupleslist(fileName[0])
-      # ns_dict = self.nested_dictionary(tupslist_subclassof)
-      # self.build_tree(data=ns_dict, parent=self.ui.treeWidget)
-      # it = QTreeWidgetItem([text])
-      # self.ui.treeWidget.addChild(it)
-      ontograph = self.ontology_graph
-      # triplesList = [(o,s) for s, _, o in ontograph.match(None, 'subClassOf', None)]
 
-      self.ontology_graph.append((text, 'subClassOf', self.clicked_item))
-      tupslist_subclassof = [(o, s) for s, _, o in ontograph.match(None, 'subClassOf', None)]
-      print('this is add list', tupslist_subclassof)
-      ns_dict = self.nested_dictionary(tupslist_subclassof)
-      print('This is nested dictionary....', ns_dict)
-      # self.ui.treeWidget.clear()
-      self.make_treewidget(ns_dict, self.ui.treeWidget, self.ontology_root)
-
-  def on_pushAddClass_pressed(self):
-    text, ok = QtWidgets.QInputDialog.getText(self, "Add new class",
-                                              "Enter class name as one word f.ex coating system as coatingSystem: ")
-
-    if ok:
-      print('item clicked:', self.clicked_item)
-      self.ontology_graph.append((text, 'isA', 'Class'))
-      tupslist_subclassof = [(o, s) for s, _, o in self.ontology_graph.match(None, 'isA', None)]
-
-      tupslist_isaclass = [(o, s) for s, _, o in self.ontology_graph.match(None, 'isA', 'Class')]
-      tupslist_subclassof = [(o, s) for s, _, o in self.ontology_graph.match(None, 'subClassOf', None)]
-      tupslist_classsubclass = tupslist_isaclass + tupslist_subclassof
-      print('Tuples list isA...', tupslist_isaclass)
-      print('Tuples list subcassof ...', tupslist_subclassof)
-      print('Tuples list class-subclass...', tupslist_classsubclass)
-      # tups_list = self.get_tupleslist(fileName[0])
-      ns_dict = self.nested_dictionary(tupslist_classsubclass)
-      pprint.pprint(ns_dict, width=1)
-
-      # print('this is add list', tupslist_subclassof)
-      # ns_dict = self.nested_dictionary(tupslist_subclassof)
-      # print(ns_dict)
-      # self.ui.treeWidget.clear()
-      self.make_treewidget(ns_dict, self.ui.treeWidget, self.ontology_root, dictKey='Class')
+    # text, ok = QtWidgets.QInputDialog.getText(self, "Add new class",
+    #                                           "Enter class name as one word f.ex coating system as coatingSystem: ")
+    #
+    # if ok:
+    #   print('item clicked:', self.clicked_item)
+    #   self.ontology_graph.append((text, 'isA', 'Class'))
+    #   tupslist_subclassof = [(o, s) for s, _, o in self.ontology_graph.match(None, 'isA', None)]
+    #
+    #   tupslist_isaclass = [(o, s) for s, _, o in self.ontology_graph.match(None, 'isA', 'Class')]
+    #   tupslist_subclassof = [(o, s) for s, _, o in self.ontology_graph.match(None, 'subClassOf', None)]
+    #   tupslist_classsubclass = tupslist_isaclass + tupslist_subclassof
+    #   print('Tuples list isA...', tupslist_isaclass)
+    #   print('Tuples list subcassof ...', tupslist_subclassof)
+    #   print('Tuples list class-subclass...', tupslist_classsubclass)
+    #   # tups_list = self.get_tupleslist(fileName[0])
+    #   ns_dict = self.nested_dictionary(tupslist_classsubclass)
+    #   pprint.pprint(ns_dict, width=1)
+    #
+    #   # print('this is add list', tupslist_subclassof)
+    #   # ns_dict = self.nested_dictionary(tupslist_subclassof)
+    #   # print(ns_dict)
+    #   # self.ui.treeWidget.clear()
+    #   self.make_treewidget(ns_dict, self.ui.treeWidget, self.ontology_root, dictKey='Class')
 
   # TODO: remove option is currently disable by setting flag to False. This needs to be fixed!
-  def on_pushRemoveNode_pressed(self):
-    remove_item_list = [(s, p, o) for s, p, o in self.ontology_graph.match(self.clicked_item, 'subClassOf', None)]
-    print('remove items list ......', remove_item_list)
-    for rm in remove_item_list:
-      self.ontology_graph.remove(rm)
-    tupslist_subclassof = [(o, s) for s, _, o in self.ontology_graph.match(None, 'subClassOf', None)]
-    print('this is add list', tupslist_subclassof)
-
-    ns_dict = self.nested_dictionary(tupslist_subclassof)
-    print(ns_dict)
-    # self.ui.treeWidget.clear()
-    self.make_treewidget(ns_dict, self.ui.treeWidget, self.ontology_root)
+  # def on_pushRemoveNode_pressed(self):
+  #   remove_item_list = [(s, p, o) for s, p, o in self.ontology_graph.match(self.clicked_item, 'subClassOf', None)]
+  #   print('remove items list ......', remove_item_list)
+  #   for rm in remove_item_list:
+  #     self.ontology_graph.remove(rm)
+  #   tupslist_subclassof = [(o, s) for s, _, o in self.ontology_graph.match(None, 'subClassOf', None)]
+  #   print('this is add list', tupslist_subclassof)
+  #
+  #   ns_dict = self.nested_dictionary(tupslist_subclassof)
+  #   print(ns_dict)
+  #   # self.ui.treeWidget.clear()
+  #   self.make_treewidget(ns_dict, self.ui.treeWidget, self.ontology_root)
 
   # def on_pushAddSubclass_pressed(self):
   #     self.ui.pushasp_signal = True

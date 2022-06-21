@@ -65,7 +65,7 @@
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>401</width>
+        <width>466</width>
         <height>51</height>
        </rect>
       </property>
@@ -78,9 +78,16 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="pushAddClass">
+        <widget class="QPushButton" name="pushAddExistingClass">
          <property name="text">
-          <string>add class</string>
+          <string>add existing class</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushAddNewClass">
+         <property name="text">
+          <string>add new class</string>
          </property>
         </widget>
        </item>
@@ -143,13 +150,13 @@
     <property name="title">
      <string>class list</string>
     </property>
-    <widget class="QListView" name="listClasses">
+    <widget class="QListWidget" name="listClasses">
      <property name="geometry">
       <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>241</width>
-       <height>401</height>
+       <x>5</x>
+       <y>40</y>
+       <width>251</width>
+       <height>481</height>
       </rect>
      </property>
     </widget>
