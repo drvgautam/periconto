@@ -73,15 +73,22 @@ class Graph:
           return self.path(dest, destination, link, visited)
     return visited
 
-  def plot(self):
+  def plot(self, class_names=[]):
     """
     Create Digraph plot
     """
     dot = Digraph()
     # Add nodes 1 and 2
     for s, p, o in self.match():
-      dot.node(str(s))
-      dot.node(str(o))
+      if s in class_names:
+        dot.node(str(s),color='red', shape="rectangle")
+      else:
+        dot.node(str(s))
+
+      if o in class_names:
+        dot.node(str(o), color='red', shape="rectangle")
+      else:
+        dot.node(str(o))
       dot.edge(str(s), str(o), label=p)
 
     # Visualize the graph

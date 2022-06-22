@@ -426,7 +426,7 @@ class OntobuilderUI(QMainWindow):
       for t in self.CLASSES[cl].triples:
         graph_overall.append(t)
 
-    dot = graph_overall.plot()
+    dot = graph_overall.plot(self.class_names)
     print("debugging -- dot")
     dot.render("graph")
 
