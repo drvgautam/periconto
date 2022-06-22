@@ -1,0 +1,4 @@
+('kk', 'is_a_subclass_of', 'coating', 'coating')
+('k', 'is_a_subclass_of', 'coating', 'coating')
+('j', 'link_to_class', 'kk', 'coating')
+('m', 'is_a_subclass_of', 'j', 'j')

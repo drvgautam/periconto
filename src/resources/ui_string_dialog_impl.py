@@ -107,7 +107,10 @@ class UI_String(QtWidgets.QDialog):
     self.__accept()
 
   def getText(self):
-    return self.ui.lineEdit.text()
+    text = self.ui.lineEdit.text()
+    if text in self.limiting_list:
+      text = None
+    return text
 
   def newText(self, txt):
     # print("changed text:", txt, len(txt))

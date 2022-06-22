@@ -1,0 +1,14 @@
+{
+  "coating": [
+    [
+      "k",
+      "is_a_subclass_of",
+      "coating"
+    ],
+    [
+      "kk",
+      "is_a_subclass_of",
+      "coating"
+    ]
+  ]
+}
