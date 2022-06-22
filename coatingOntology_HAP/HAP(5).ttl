@@ -99,26 +99,6 @@
       "material",
       "link_to_class",
       "binder"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "colourant"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "inhibitor"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "extender"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "dye"
     ]
   ],
   "material": [
@@ -151,22 +131,6 @@
       "gas",
       "is_a_subclass_of",
       "fluid"
-    ],
-    [
-      "chemical component",
-      "link_to_class",
-      "organic"
-    ],
-    [
-      "chemical component",
-      "link_to_class",
-      "inorganic"
-    ],
-    [
-      "chemical component",
-      "link_to_class",
-      "solid"
     ]
-  ],
-  "chemical component": []
+  ]
 }

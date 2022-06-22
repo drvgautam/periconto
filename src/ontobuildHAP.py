@@ -24,7 +24,68 @@ PREDICATES = {"subclass": "is_a_subclass_of",
               "link"    : "link_to_class"}
 LINK_COLOUR = QtGui.QColor(255, 100, 5, 255)
 
-QTROUPLEFILE = os.path.join("../coatingOntology_HAP", "%s.qtr" % "HAP")
+QTROUPLEFILE = os.path.join("../coatingOntology_HAP", "%s.ttl" % "HAP")
+
+
+def putData(data, file_spec, indent="  "):
+  print("writing to file: ", file_spec)
+  dump = json.dumps(data, indent=indent)
+  with open(file_spec, "w+") as f:
+    f.write(dump)
+
+
+def getFilesAndVersions(abs_name, ext):
+  base_name = os.path.basename(abs_name)
+  ver = 0  # initial last version
+  _s = []
+  directory = os.path.dirname(abs_name)  # listdir(os.getcwd())
+  files = os.listdir(directory)
+
+  for f in files:
+    n, e = os.path.splitext(f)
+    #        print 'name', n
+    if e == ext:  # this is another type
+      if n[0:len(base_name) + 1] == base_name + "(":  # only those that start with name
+        #  extract version
+        l = n.index("(")
+        r = n.index(")")
+        assert l * r >= 0  # both must be there
+        v = int(n[l + 1:r])
+        ver = max([ver, v])
+        _s.append(n)
+  return _s, ver
+
+
+def saveBackupFile(path):
+  ver_temp = "(%s)"
+  (abs_name, ext) = os.path.splitext(path)  # path : directory/<name>.<ext>
+  #  TODO: the access check fails -- not clear why, when removed writing works OK
+  if os.path.exists(path):
+    _f, ver = getFilesAndVersions(abs_name, ext)
+    old_path = path
+    new_path = abs_name + ver_temp % str(ver + 1) + ext
+    next_path = abs_name + ver_temp % str(ver + 2) + ext
+    os.rename(old_path, new_path)
+    return old_path, new_path, next_path
+  else:
+    print("Error -- no such file : %s" % path, file=sys.stderr)
+    return
+
+
+def saveWithBackup(data, path):
+  print("saving")
+  old_path, new_path, next_path = saveBackupFile(path)
+  putData(data, path)
+
+
+def getData(file_spec):
+  # print("get data from ", file_spec)
+  if os.path.exists(file_spec):
+    f = open(file_spec, "r")
+    data = json.loads(f.read())
+    return data
+  else:
+    return None
 
 
 class OntobuilderUI(QMainWindow):
@@ -211,7 +272,9 @@ class OntobuilderUI(QMainWindow):
     parent_item = self.ui.treeClass.currentItem()
     item = QTreeWidgetItem(parent_item)
     item.setText(0, subclass_ID)
+    self.ui.treeClass.expandAll()
     self.changed = True
+
 
   def on_pushAddNewClass_pressed(self):
     print("debugging -- add class")
@@ -318,7 +381,7 @@ class OntobuilderUI(QMainWindow):
 
     else:
       print("no changes")
-      self.close()
+    self.close()
 
   def on_pushSave_pressed(self):
     print("debugging -- pushSave")
@@ -328,10 +391,11 @@ class OntobuilderUI(QMainWindow):
       for t in self.CLASSES[cl].triples:
         graphs[cl].append(t)
 
-    self.putData(graphs, QTROUPLEFILE)
+    saveWithBackup(graphs, QTROUPLEFILE)
+    self.changed = False
 
   def on_pushLoad_pressed(self):
-    graphs = self.getData(QTROUPLEFILE)
+    graphs = getData(QTROUPLEFILE)
     self.CLASSES = {}
     for g in graphs:
       self.class_definition_sequence.append(g)
@@ -355,20 +419,6 @@ class OntobuilderUI(QMainWindow):
     self.ui.listClasses.addItems(self.class_path)
     self.__ui_state("show_tree")
 
-  def putData(self, data, file_spec, indent="  "):
-    print("writing to file: ", file_spec)
-    dump = json.dumps(data, indent=indent)
-    with open(file_spec, "w+") as f:
-      f.write(dump)
-
-  def getData(self, file_spec):
-    # print("get data from ", file_spec)
-    if os.path.exists(file_spec):
-      f = open(file_spec, "r")
-      data = json.loads(f.read())
-      return data
-    else:
-      return None
 
   def on_pushVisualise_pressed(self):
 
