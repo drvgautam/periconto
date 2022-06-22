@@ -105,37 +105,3 @@ class Graph:
       p = e[1]
       o = e[2]
       print(f"{{ data: {{ id: '{p}_{s}_{o}', source: '{s}', target: '{o}', label: '{p}' }} }},")
-
-  #
-  # def makeTree(self, origin):
-  #
-  #     for _, r, dest in self.match(origin, None, None):
-  #
-  #
-  #         if not dest in visited:
-  #             link.append(dest)
-  #             print("forward", dest)
-  #             if dest == destination:
-  #                 return link
-  #             else:
-  #                 return self.path(dest, destination, link, visited)
-  #
-  #
-  #
-  #     pass
-  # def walkDepthFirstFnc(tree, id):
-  #     """
-  #     walk a tree depth first iteratively
-  #     :param tree: container with node and its children specified tree[#node]["children" ]
-  #     :param id: #node
-  #     :return: nodes
-  #     """
-  #     nodes = []
-  #     stack = [id]
-  #     while stack:
-  #         cur_node = stack[0]
-  #         stack = stack[1:]
-  #         nodes.append(cur_node)
-  #         for child in reversed(tree[cur_node]["children"]):
-  #             stack.insert(0, child)
-  #     return nodes
