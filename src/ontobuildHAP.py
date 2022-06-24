@@ -429,6 +429,7 @@ class OntobuilderUI(QMainWindow):
     dot = graph_overall.plot(self.class_names)
     print("debugging -- dot")
     dot.render("graph")
+    dot.view()
 
     #
     # self.process = QtCore.QProcess()
