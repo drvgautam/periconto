@@ -132,7 +132,7 @@ def changing(txt):
 
 if __name__ == '__main__':
 
-  from Common.resource_initialisation import DIRECTORIES
+  from resource.resource_initialisation import DIRECTORIES
   import os
 
   JOIN = os.path.join
