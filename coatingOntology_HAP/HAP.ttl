@@ -6,12 +6,17 @@
       "coating"
     ],
     [
-      "pre-tretment",
+      "pre-treated surface",
       "is_a_subclass_of",
       "coating"
     ],
     [
       "coating layer",
+      "is_a_subclass_of",
+      "coating"
+    ],
+    [
+      "interface",
       "is_a_subclass_of",
       "coating"
     ],
@@ -41,68 +46,127 @@
       "coating layer"
     ],
     [
-      "defoamers",
+      "colourant",
+      "is_a_subclass_of",
+      "pigment"
+    ],
+    [
+      "inhibitor",
+      "is_a_subclass_of",
+      "pigment"
+    ],
+    [
+      "defoamer",
       "is_a_subclass_of",
       "additives"
     ],
     [
-      "wetting",
+      "wetting agent",
       "is_a_subclass_of",
       "additives"
     ],
     [
-      "catalysist",
+      "surface actives",
       "is_a_subclass_of",
       "additives"
     ],
     [
-      "materials",
+      "rheology",
+      "is_a_subclass_of",
+      "additives"
+    ],
+    [
+      "dryers",
+      "is_a_subclass_of",
+      "additives"
+    ],
+    [
+      "catalyst",
+      "is_a_subclass_of",
+      "additives"
+    ],
+    [
+      "preservatives",
+      "is_a_subclass_of",
+      "additives"
+    ],
+    [
+      "light stabilisers",
+      "is_a_subclass_of",
+      "additives"
+    ],
+    [
+      "material",
       "link_to_class",
       "binder"
     ],
     [
-      "materials",
+      "material",
       "link_to_class",
-      "pigment"
+      "colourant"
     ],
     [
-      "materials",
+      "material",
       "link_to_class",
-      "defoamers"
+      "inhibitor"
+    ],
+    [
+      "material",
+      "link_to_class",
+      "extender"
+    ],
+    [
+      "material",
+      "link_to_class",
+      "dye"
     ]
   ],
-  "materials": [
+  "material": [
     [
       "organic",
       "is_a_subclass_of",
-      "materials"
+      "material"
     ],
     [
       "inorganic",
       "is_a_subclass_of",
-      "materials"
+      "material"
     ],
     [
-      "chemComp",
+      "solid",
+      "is_a_subclass_of",
+      "material"
+    ],
+    [
+      "fluid",
+      "is_a_subclass_of",
+      "material"
+    ],
+    [
+      "liquid",
+      "is_a_subclass_of",
+      "fluid"
+    ],
+    [
+      "gas",
+      "is_a_subclass_of",
+      "fluid"
+    ],
+    [
+      "chemical component",
       "link_to_class",
       "organic"
     ],
     [
-      "chemComp",
+      "chemical component",
       "link_to_class",
       "inorganic"
-    ]
-  ],
-  "chemComp": [
-    [
-      "URL",
-      "is_a_subclass_of",
-      "chemComp"
     ],
     [
-      "elucidation",
-      "is_a_subclass_of",
-      "chemComp"
+      "chemical component",
+      "link_to_class",
+      "solid"
     ]
-  ]
+  ],
+  "chemical component": []
 }
