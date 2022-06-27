@@ -1,0 +1,172 @@
+{
+  "coating": [
+    [
+      "light stabilisers",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "additives"
+    ],
+    [
+      "material",
+      "http://www.w3.org/2000/01/rdf-schema#isDefinedBy",
+      "extender"
+    ],
+    [
+      "material",
+      "http://www.w3.org/2000/01/rdf-schema#isDefinedBy",
+      "binder"
+    ],
+    [
+      "colourant",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "pigment"
+    ],
+    [
+      "substrate",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "coating"
+    ],
+    [
+      "pigment",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "coating layer"
+    ],
+    [
+      "inhibitor",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "pigment"
+    ],
+    [
+      "extender",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "coating layer"
+    ],
+    [
+      "catalyst",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "additives"
+    ],
+    [
+      "pre-treated surface",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "coating"
+    ],
+    [
+      "dryers",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "additives"
+    ],
+    [
+      "wetting agent",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "additives"
+    ],
+    [
+      "defoamer",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "additives"
+    ],
+    [
+      "rheology",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "additives"
+    ],
+    [
+      "material",
+      "http://www.w3.org/2000/01/rdf-schema#isDefinedBy",
+      "colourant"
+    ],
+    [
+      "dye",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "coating layer"
+    ],
+    [
+      "preservatives",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "additives"
+    ],
+    [
+      "material",
+      "http://www.w3.org/2000/01/rdf-schema#isDefinedBy",
+      "dye"
+    ],
+    [
+      "additives",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "coating layer"
+    ],
+    [
+      "binder",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "coating layer"
+    ],
+    [
+      "interface",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "coating"
+    ],
+    [
+      "surface actives",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "additives"
+    ],
+    [
+      "material",
+      "http://www.w3.org/2000/01/rdf-schema#isDefinedBy",
+      "inhibitor"
+    ],
+    [
+      "coating layer",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "coating"
+    ]
+  ],
+  "material": [
+    [
+      "chemical component",
+      "http://www.w3.org/2000/01/rdf-schema#isDefinedBy",
+      "organic"
+    ],
+    [
+      "inorganic",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "material"
+    ],
+    [
+      "fluid",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "material"
+    ],
+    [
+      "chemical component",
+      "http://www.w3.org/2000/01/rdf-schema#isDefinedBy",
+      "solid"
+    ],
+    [
+      "solid",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "material"
+    ],
+    [
+      "gas",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "fluid"
+    ],
+    [
+      "organic",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "material"
+    ],
+    [
+      "chemical component",
+      "http://www.w3.org/2000/01/rdf-schema#isDefinedBy",
+      "inorganic"
+    ],
+    [
+      "liquid",
+      "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+      "fluid"
+    ]
+  ],
+  "chemical component": []
+}

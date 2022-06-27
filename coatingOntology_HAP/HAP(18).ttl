@@ -1,19 +1,9 @@
 {
   "coating": [
     [
-      "material",
-      "link_to_class",
-      "surfaceActive"
-    ],
-    [
       "wetting",
       "is_a_subclass_of",
       "additives"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "preservative"
     ],
     [
       "pigment",
@@ -39,11 +29,6 @@
       "surfaceActive",
       "is_a_subclass_of",
       "additives"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "catalyst"
     ],
     [
       "extender",
@@ -103,16 +88,6 @@
     [
       "material",
       "link_to_class",
-      "defoamer"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "dryingAgent"
-    ],
-    [
-      "material",
-      "link_to_class",
       "colourPigment"
     ],
     [
@@ -126,16 +101,6 @@
       "pigment"
     ],
     [
-      "material",
-      "link_to_class",
-      "wetting"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "lightStabiliser"
-    ],
-    [
       "lightStabiliser",
       "is_a_subclass_of",
       "additives"
@@ -144,11 +109,6 @@
       "dryingAgent",
       "is_a_subclass_of",
       "additives"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "rheologyAgent"
     ],
     [
       "material",

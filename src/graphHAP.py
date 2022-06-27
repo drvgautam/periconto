@@ -6,7 +6,10 @@ from typing import List
 from typing import Tuple
 
 from graphviz import Digraph
-from rdflib import Graph as RDFGraph
+
+from rdflib import Graph, ConjunctiveGraph, RDF, BNode, Literal, RDFS
+from rdflib.plugins.stores.memory import Memory
+
 
 NTuple = Tuple[Any, ...]
 
@@ -17,6 +20,8 @@ class Graph(RDFGraph):
 
   def clear(self):
     self.triples.clear()
+
+
 
   def append(self, nt: NTuple):
     if not nt in self.triples:

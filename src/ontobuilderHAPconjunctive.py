@@ -1,5 +1,13 @@
 #!/usr/local/bin/python3
 
+"""
+This version uses RDF syntax for the predicates. The subjects and objects are Literals. The latter caused problems
+when saving using the serializers. It can be saved but not read afterwards.
+
+So the approach is to use an internal representation of the predicates and translate when loading and saving.
+
+
+"""
 
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -9,7 +17,7 @@ import os
 
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import *
-from rdflib import Graph, ConjunctiveGraph, RDF, BNode, Literal, RDFS
+from rdflib import Graph, ConjunctiveGraph, RDF, BNode, Literal, RDFS, Dataset
 from rdflib.plugins.stores.memory import Memory
 
 
@@ -20,16 +28,42 @@ from resources.resources_icons import roundButton
 from resources.single_list_selector_impl import SingleListSelector
 from resources.ui_string_dialog_impl import UI_String
 
+from graphviz import Digraph
+
 ROOT_CLASS = "coating"
 PREDICATES = {
         "subclass": RDFS.subClassOf,   #"is_a_subclass_of",
         "link"    : RDFS.isDefinedBy, #"link_to_class"
         }
+MYPredicates = {RDFS.subClassOf: "is_a_subclass_of",
+                RDFS.isDefinedBy: "link_to_class"}
+
 LINK_COLOUR = QtGui.QColor(255, 100, 5, 255)
 
 TTLFile = os.path.join("../coatingOntology_HAP", "%s.ttl" % "HAP")
 TTLDirectory = "../coatingOntology_HAP"
 
+
+def plot(graph, class_names=[]):
+  """
+  Create Digraph plot
+  """
+  dot = Digraph()
+  # Add nodes 1 and 2
+  for s, p, o in graph.triples((None,None,None)):
+    if s in class_names:
+      dot.node(str(s), color='red', shape="rectangle")
+    else:
+      dot.node(str(s))
+
+    if o in class_names:
+      dot.node(str(o), color='red', shape="rectangle")
+    else:
+      dot.node(str(o))
+    dot.edge(str(s), str(o), label=p)
+
+  # Visualize the graph
+  return dot
 
 def putData(data, file_spec, indent="  "):
   print("writing to file: ", file_spec)
@@ -137,6 +171,7 @@ class OntobuilderUI(QMainWindow):
     self.class_path = []
     self.link_lists = {}
     self.class_definition_sequence = []
+    self.TTLfile = TTLFile
 
     #
     # coating = Graph()
@@ -208,7 +243,7 @@ class OntobuilderUI(QMainWindow):
     rootItem.setSelected(True)
     widget.addTopLevelItem(rootItem)
     self.current_class = origin
-    self.__makeTree(origin=origin, stack=[], parent=rootItem)
+    self.__makeTree(origin=Literal(origin), stack=[], parent=rootItem)
     widget.show()
     widget.expandAll()
     self.current_subclass = origin
@@ -228,7 +263,7 @@ class OntobuilderUI(QMainWindow):
         else:
           stack.append(subject)
         item.setText(0, subject)
-        self.__makeTree(origin=subject, stack=stack, parent=item)
+        self.__makeTree(origin=Literal(subject), stack=stack, parent=item)
 
   def on_pushCreate_pressed(self):
     dialog = UI_String("name for your ontology file", placeholdertext="file name extension is deault")
@@ -236,7 +271,7 @@ class OntobuilderUI(QMainWindow):
     name = dialog.getText()
     if name:
       fname = name.split(".")[0] + ".ttl"
-      TTLFile = os.path.join(TTLDirectory, fname)
+      self.TTLFile = os.path.join(TTLDirectory, fname)
     else:
       self.close()
 
@@ -348,7 +383,9 @@ class OntobuilderUI(QMainWindow):
         return
 
       class_ID = selection
-      self.CLASSES[self.current_class].append((class_ID, PREDICATES["link"], self.current_subclass))
+      subject = makeRDFCompatible(class_ID)
+      object = makeRDFCompatible(self.current_subclass)
+      self.CLASSES[self.current_class].add((subject, PREDICATES["link"], object))
 
       if class_ID not in self.link_lists:
         self.link_lists[class_ID] = []
@@ -418,17 +455,51 @@ class OntobuilderUI(QMainWindow):
   def on_pushSave_pressed(self):
     print("debugging -- pushSave")
 
-    # graphs = {}
+    # NOTE: this does work fine, but one cannot read it afterwards. Issue is the parser. It assumes that the subject and
+    # NOTE: object are in the namespace.
+
+    # conjunctiveGraph = ConjunctiveGraph('Memory')
     # for cl in self.class_definition_sequence:
-    #   graphs[cl] = []
-    #   for t in self.CLASSES[cl].triples:
-    #     graphs[cl].append(t)
+    #   uri = Literal(cl)
+    #   for s,p,o in self.CLASSES[cl].triples((None,None,None)):
+    #     print(s,p,o)
+    #     conjunctiveGraph.get_context(uri).add([s,p,o])
     #
+    # print("debugging")
+    #
+    # f = self.TTLFile.split(".")[0] + ".nqd"
+    # inf = open(f,'w')
+    # inf.write(conjunctiveGraph.serialize(format="nquads"))
+    # inf.close()
+    #
+    # print("written to file ", f)
+
+
+    # Note: saving it with the RDF syntax did not work for loading. Needs more reading...?
+
+    graphs = {}
+    for cl in self.class_definition_sequence:
+      graphs[cl] = []
+      for  s,p,o  in self.CLASSES[cl].triples((None,None,None)):
+        my_p = MYPredicates[p]
+        graphs[cl].append((s,my_p,o))
+
+    saveWithBackup(graphs, TTLFile)
+
+    # graphs = Graph("Memory")
+    # for cl in self.class_definition_sequence:
+    #   # graphs[cl] = []
+    #   for t in self.CLASSES[cl].triples((None, None, None)):
+    #     graphs.add(t)
+    #
+    # self.TTLFile = self.TTLFile.split(".ttl")[0] + ".nquads"
+    #
+    # graphs.serialize(TTLFile, format="nquads")
     # saveWithBackup(graphs, TTLFile)
     # self.changed = False
 
-    # for g in self.class_definition_sequence:
-    #   g.
+    self.changed = False
+
 
   def saveAs(self):
     print("not implemented")
@@ -439,15 +510,25 @@ class OntobuilderUI(QMainWindow):
                                          "Load Ontology",
                                          TTLDirectory,
                                          "",
-                                         "Turtle files (*.ttl)",
+                                         # "Turtle files (*.ttl)",
+                                         "Nquads files (*.ttl",
                                          # options=options
                                          )
-    TTLFile = dialog[0]
+    self.TTLFile = dialog[0]
     if dialog[0] == "":
       self.close()
 
+    # try:
+    #   data = Dataset()
+    #   infile = open(self.TTLFile, 'r')
+    #   data.parse(infile, format="nquads")
+    #   infile.close()
+    #   print("debugging")
+    # except:
+    #   pass
+
     print("debugging")
-    graphs = getData(TTLFile)
+    graphs = getData(self.TTLFile)
     self.CLASSES = {}
     for g in graphs:
       self.class_definition_sequence.append(g)
@@ -455,15 +536,14 @@ class OntobuilderUI(QMainWindow):
       self.subclass_names[g] = []
       self.link_lists[g] = []
       self.CLASSES[g] = Graph()
-      for s,p,o in graphs[g]:
+      for s, p, o in graphs[g]:
         subject = makeRDFCompatible(s)
         object = makeRDFCompatible(o)
         if p == "is_a_subclass_of":
           p = PREDICATES["subclass"]
         if p == "link_to_class":
           p = PREDICATES["link"]
-
-        self.CLASSES[g].add((subject,p,object))
+        self.CLASSES[g].add((subject, p, object))
         # s, p, o = t
         if p == PREDICATES["subclass"]:
           self.subclass_names[g].append(s)
@@ -482,8 +562,8 @@ class OntobuilderUI(QMainWindow):
 
     graph_overall = Graph()
     for cl in self.CLASSES:
-      for t in self.CLASSES[cl].triples:
-        graph_overall.append(t)
+      for t in self.CLASSES[cl].triples((None,None,None)):
+        graph_overall.add(t)
 
     dot = graph_overall.plot(self.class_names)
     print("debugging -- dot")

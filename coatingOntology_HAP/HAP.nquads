@@ -1,0 +1,34 @@
+"coating layer" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "coating" "coating" .
+"material" <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> "colourant" "coating" .
+"substrate" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "coating" "coating" .
+"pre-treated surface" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "coating" "coating" .
+"material" <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> "dye" "coating" .
+"light stabilisers" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "additives" "coating" .
+"pigment" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "coating layer" "coating" .
+"interface" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "coating" "coating" .
+"material" <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> "inhibitor" "coating" .
+"material" <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> "binder" "coating" .
+"wetting agent" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "additives" "coating" .
+"material" <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> "extender" "coating" .
+"binder" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "coating layer" "coating" .
+"dye" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "coating layer" "coating" .
+"extender" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "coating layer" "coating" .
+"inhibitor" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "pigment" "coating" .
+"defoamer" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "additives" "coating" .
+"additives" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "coating layer" "coating" .
+"surface actives" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "additives" "coating" .
+"rheology" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "additives" "coating" .
+"dryers" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "additives" "coating" .
+"colourant" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "pigment" "coating" .
+"catalyst" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "additives" "coating" .
+"preservatives" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "additives" "coating" .
+"organic" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "material" "material" .
+"chemical component" <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> "solid" "material" .
+"fluid" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "material" "material" .
+"inorganic" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "material" "material" .
+"gas" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "fluid" "material" .
+"chemical component" <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> "inorganic" "material" .
+"liquid" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "fluid" "material" .
+"solid" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "material" "material" .
+"chemical component" <http://www.w3.org/2000/01/rdf-schema#isDefinedBy> "organic" "material" .
+
