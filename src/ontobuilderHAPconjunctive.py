@@ -60,7 +60,9 @@ def plot(graph, class_names=[]):
       dot.node(str(o), color='red', shape="rectangle")
     else:
       dot.node(str(o))
-    dot.edge(str(s), str(o), label=p)
+
+    my_p = MYPredicates[p]
+    dot.edge(str(s), str(o), label=my_p)
 
   # Visualize the graph
   return dot
@@ -565,9 +567,9 @@ class OntobuilderUI(QMainWindow):
       for t in self.CLASSES[cl].triples((None,None,None)):
         graph_overall.add(t)
 
-    dot = graph_overall.plot(self.class_names)
+    dot = plot(graph_overall, self.class_names)
     print("debugging -- dot")
-    dot.render("graph")
+    dot.render("graph", directory=TTLDirectory)
     dot.view()
 
 

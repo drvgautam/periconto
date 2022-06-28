@@ -1,12 +1,27 @@
 {
   "coating": [
     [
-      "preTreatedSurface",
-      "is_a_subclass_of",
-      "coating"
+      "material",
+      "link_to_class",
+      "surfaceActive"
     ],
     [
-      "substrate",
+      "wetting",
+      "is_a_subclass_of",
+      "additives"
+    ],
+    [
+      "material",
+      "link_to_class",
+      "preservative"
+    ],
+    [
+      "pigment",
+      "is_a_subclass_of",
+      "coatingLayer"
+    ],
+    [
+      "coatingLayer",
       "is_a_subclass_of",
       "coating"
     ],
@@ -16,17 +31,7 @@
       "coatingLayer"
     ],
     [
-      "material",
-      "link_to_class",
-      "dye"
-    ],
-    [
-      "catalyst",
-      "is_a_subclass_of",
-      "additives"
-    ],
-    [
-      "lightStabiliser",
+      "defoamer",
       "is_a_subclass_of",
       "additives"
     ],
@@ -36,19 +41,69 @@
       "additives"
     ],
     [
-      "colourPigment",
-      "is_a_subclass_of",
-      "pigment"
+      "material",
+      "link_to_class",
+      "catalyst"
     ],
     [
-      "surfacTreatmentProcess",
+      "extender",
+      "is_a_subclass_of",
+      "coatingLayer"
+    ],
+    [
+      "material",
       "link_to_class",
-      "preTreatedSurface"
+      "inhibitorPigment"
+    ],
+    [
+      "rheologyAgent",
+      "is_a_subclass_of",
+      "additives"
+    ],
+    [
+      "substrate",
+      "is_a_subclass_of",
+      "coating"
     ],
     [
       "binder",
       "is_a_subclass_of",
       "coatingLayer"
+    ],
+    [
+      "material",
+      "link_to_class",
+      "substrate"
+    ],
+    [
+      "catalyst",
+      "is_a_subclass_of",
+      "additives"
+    ],
+    [
+      "preservative",
+      "is_a_subclass_of",
+      "additives"
+    ],
+    [
+      "colourPigment",
+      "is_a_subclass_of",
+      "pigment"
+    ],
+    [
+      "dye",
+      "is_a_subclass_of",
+      "coatingLayer"
+    ],
+    [
+      "preTreatedSurface",
+      "is_a_subclass_of",
+      "coating"
+    ],
+    [
+      "material",
+      "link_to_class",
+      "defoamer"
     ],
     [
       "material",
@@ -61,69 +116,14 @@
       "colourPigment"
     ],
     [
-      "material",
+      "surfacTreatmentProcess",
       "link_to_class",
-      "catalyst"
+      "preTreatedSurface"
     ],
     [
-      "pigment",
+      "inhibitorPigment",
       "is_a_subclass_of",
-      "coatingLayer"
-    ],
-    [
-      "preservative",
-      "is_a_subclass_of",
-      "additives"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "lightStabiliser"
-    ],
-    [
-      "dye",
-      "is_a_subclass_of",
-      "coatingLayer"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "surfaceActive"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "rheologyAgent"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "extender"
-    ],
-    [
-      "dryingAgent",
-      "is_a_subclass_of",
-      "additives"
-    ],
-    [
-      "extender",
-      "is_a_subclass_of",
-      "coatingLayer"
-    ],
-    [
-      "wetting",
-      "is_a_subclass_of",
-      "additives"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "defoamer"
-    ],
-    [
-      "material",
-      "link_to_class",
-      "preservative"
+      "pigment"
     ],
     [
       "material",
@@ -133,44 +133,34 @@
     [
       "material",
       "link_to_class",
-      "substrate"
+      "lightStabiliser"
+    ],
+    [
+      "lightStabiliser",
+      "is_a_subclass_of",
+      "additives"
+    ],
+    [
+      "dryingAgent",
+      "is_a_subclass_of",
+      "additives"
     ],
     [
       "material",
       "link_to_class",
-      "inhibitorPigment"
+      "rheologyAgent"
     ],
     [
       "material",
       "link_to_class",
       "binder"
-    ],
-    [
-      "rheologyAgent",
-      "is_a_subclass_of",
-      "additives"
-    ],
-    [
-      "defoamer",
-      "is_a_subclass_of",
-      "additives"
-    ],
-    [
-      "inhibitorPigment",
-      "is_a_subclass_of",
-      "pigment"
-    ],
-    [
-      "coatingLayer",
-      "is_a_subclass_of",
-      "coating"
     ]
   ],
   "material": [
     [
-      "chemicalComponent",
-      "link_to_class",
-      "organic"
+      "inorganic",
+      "is_a_subclass_of",
+      "material"
     ],
     [
       "organic",
@@ -178,19 +168,19 @@
       "material"
     ],
     [
-      "inorganic",
-      "is_a_subclass_of",
-      "material"
-    ],
-    [
       "chemicalComponent",
       "link_to_class",
-      "inorganic"
+      "organic"
+    ],
+    [
+      "",
+      "is_a_subclass_of",
+      "material"
     ]
   ],
   "chemicalComponent": [
     [
-      "quantityMeasure",
+      "elucidation",
       "is_a_subclass_of",
       "chemicalComponent"
     ],
@@ -200,14 +190,14 @@
       "chemicalComponent"
     ],
     [
-      "elucidation",
+      "quantityMeasure",
       "is_a_subclass_of",
       "chemicalComponent"
     ]
   ],
   "surfacTreatmentProcess": [
     [
-      "pickling",
+      "solGelCoating",
       "is_a_subclass_of",
       "surfacTreatmentProcess"
     ],
@@ -217,17 +207,17 @@
       "surfacTreatmentProcess"
     ],
     [
-      "washing",
-      "is_a_subclass_of",
-      "surfacTreatmentProcess"
-    ],
-    [
-      "solGelCoating",
+      "pickling",
       "is_a_subclass_of",
       "surfacTreatmentProcess"
     ],
     [
       "anodizing",
+      "is_a_subclass_of",
+      "surfacTreatmentProcess"
+    ],
+    [
+      "washing",
       "is_a_subclass_of",
       "surfacTreatmentProcess"
     ]
