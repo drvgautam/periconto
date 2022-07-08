@@ -51,18 +51,21 @@ def plot(graph, class_names=[]):
   dot = Digraph()
   # Add nodes 1 and 2
   for s, p, o in graph.triples((None,None,None)):
-    if s in class_names:
-      dot.node(str(s), color='red', shape="rectangle")
+    ss = str(s)
+    sp = str(p)
+    so = str(o)
+    if ss in class_names:
+      dot.node(ss, color='red', shape="rectangle")
     else:
-      dot.node(str(s))
+      dot.node(ss)
 
-    if o in class_names:
-      dot.node(str(o), color='red', shape="rectangle")
+    if so in class_names:
+      dot.node(so, color='red', shape="rectangle")
     else:
-      dot.node(str(o))
+      dot.node(so)
 
     my_p = MYPredicates[p]
-    dot.edge(str(s), str(o), label=my_p)
+    dot.edge(ss, so, label=my_p)
 
   # Visualize the graph
   return dot
