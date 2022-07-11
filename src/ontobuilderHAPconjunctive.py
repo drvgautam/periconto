@@ -145,7 +145,7 @@ class OntobuilderUI(QMainWindow):
     roundButton(self.ui.pushLoad, "load", tooltip="load ontology")
     roundButton(self.ui.pushVisualise, "dot_graph", tooltip="visualise ontology")
     roundButton(self.ui.pushCreate, "plus", tooltip="create")
-    roundButton(self.ui.pushSave, "save", tooltip="save ProMo base ontology")
+    roundButton(self.ui.pushSave, "save", tooltip="save ontology")
     roundButton(self.ui.pushExit, "exit", tooltip="exit")
 
     self.buttons = {
@@ -522,15 +522,6 @@ class OntobuilderUI(QMainWindow):
     self.TTLFile = dialog[0]
     if dialog[0] == "":
       self.close()
-
-    # try:
-    #   data = Dataset()
-    #   infile = open(self.TTLFile, 'r')
-    #   data.parse(infile, format="nquads")
-    #   infile.close()
-    #   print("debugging")
-    # except:
-    #   pass
 
     print("debugging")
     graphs = getData(self.TTLFile)
