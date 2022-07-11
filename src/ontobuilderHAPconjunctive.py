@@ -40,7 +40,7 @@ MYPredicates = {RDFS.subClassOf: "is_a_subclass_of",
 
 LINK_COLOUR = QtGui.QColor(255, 100, 5, 255)
 
-TTLFile = os.path.join("../coatingOntology_HAP", "%s.ttl" % "HAP")
+TTLFile = os.path.join("../coatingOntology_HAP", "%s.json" % "HAP")
 TTLDirectory = "../coatingOntology_HAP"
 
 
@@ -516,7 +516,7 @@ class OntobuilderUI(QMainWindow):
                                          TTLDirectory,
                                          "",
                                          # "Turtle files (*.ttl)",
-                                         "Nquads files (*.ttl",
+                                         "triple files (*.json",
                                          # options=options
                                          )
     self.TTLFile = dialog[0]
