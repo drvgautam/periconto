@@ -13,7 +13,7 @@ g.add((foobar.anotherthing, foobar.contains, Literal('another property')))
 
 print(g.serialize(format='turtle'))
 
-dev
+
 # just to test the merge feature
 
-main
+
