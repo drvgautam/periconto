@@ -1,6 +1,6 @@
 #.......This is archived version of the application that was based on the graph.py to build a in-memory knowledge graph of the triples (subject, predicates, object)
 
-##########::INSTRUCTIONS::####
+##########::INSTRUCTION::####
 
 A brief note about the name: The name PERICONTO has two parts: PERI+ CONTO. 
 PERI stands for a term related to Indian Yellow, 
