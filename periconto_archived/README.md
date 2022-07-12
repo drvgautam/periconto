@@ -1,4 +1,6 @@
-##########::Instructions to use PERICONTO 0.1::####
+#.......This is archived version of the application that was based on the graph.py to build a in-memory knowledge graph of the triples (subject, predicates, object)
+
+##########::INSTRUCTIONS::####
 
 A brief note about the name: The name PERICONTO has two parts: PERI+ CONTO. 
 PERI stands for a term related to Indian Yellow, 
@@ -9,7 +11,7 @@ CONTO stands for coating ontologies.
 
 
 
-# how to use PERICONTO_0.1 (instructions to run the program are based on LiNUX OS, the user can adapt them as per her/his OS)
+# how to use PERICONTO (instructions to run the program are based on LiNUX OS, the user can adapt them as per her/his OS)
 
     #The program has been tested on Ubuntu 18.04 with the the Python3.8.5 and the latest Python version Python3.10. Under Python 3.10, an error relatd to Qt plateform plugin 'xcb' occured, which was resolved by installing libxcb-xinerama0 ($sudo apt-get install libxcb-xinerama0)
 
