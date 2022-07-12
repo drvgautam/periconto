@@ -1,0 +1,59 @@
+{
+  "coating": [
+    [
+      "substrate",
+      "is_a_subclass_of",
+      "coating"
+    ],
+    [
+      "pre-treated surface",
+      "is_a_subclass_of",
+      "coating"
+    ],
+    [
+      "coating layer",
+      "is_a_subclass_of",
+      "coating"
+    ],
+    [
+      "interface",
+      "is_a_subclass_of",
+      "coating"
+    ],
+    [
+      "binder",
+      "is_a_subclass_of",
+      "coating layer"
+    ],
+    [
+      "pigment",
+      "is_a_subclass_of",
+      "coating layer"
+    ],
+    [
+      "extender",
+      "is_a_subclass_of",
+      "coating layer"
+    ],
+    [
+      "dye",
+      "is_a_subclass_of",
+      "coating layer"
+    ],
+    [
+      "additives",
+      "is_a_subclass_of",
+      "coating layer"
+    ],
+    [
+      "colourant",
+      "is_a_subclass_of",
+      "pigment"
+    ],
+    [
+      "inhibitor",
+      "is_a_subclass_of",
+      "pigment"
+    ]
+  ]
+}

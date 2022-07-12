@@ -1,0 +1,56 @@
+@prefix cfo: <http://example.com/cfo#> .
+
+#@prefix cfo: <http://example.com/mt> .
+#@prefix cfo: <http://example.com/prs> .
+
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+
+cfo:substrate rdfs:subClassOf cfo:coated_system .
+cfo:pre-treated-surface rdfs:subClassOf cfo:coated_system .
+cfo:coating_layer rdfs:subClassOf cfo:coated_system .
+cfo:interface rdfs:subClassOf cfo:coated_system .
+
+
+cfo:binder rdfs:subClassOf cfo:coating_layer .
+cfo:pigment rdfs:subClassOf cfo:coating_layer .
+cfo:extender rdfs:subClassOf cfo:coating_layer .
+cfo:dye rdfs:subClassOf cfo:coating_layer .
+cfo:additives rdfs:subClassOf cfo:coating_layer .
+
+
+cfo:colour rdfs:subClassOf cfo:pigment .
+cfo:protectiv rdfs:subClassOf cfo:pigment .
+
+cfo:defoamers rdfs:subClassOf cfo:additives .
+cfo:wetting rdfs:subClassOf cfo:additives .
+cfo:surface_actives rdfs:subClassOf cfo:additives .
+cfo:rheology rdfs:subClassOf cfo:additives .
+cfo:dryers rdfs:subClassOf cfo:additives .
+cfo:catalyst rdfs:subClassOf cfo:additives .
+cfo:preservatives rdfs:subClassOf cfo:additives .
+cfo:light_stablizers rdfs:subClassOf cfo:additives .
+
+
+cfo:organic rdfs:subClassOf cfo:material .
+cfo:inorganic rdfs:subClassOf cfo:material .
+cfo:solid rdfs:subClassOf cfo:material .
+cfo:fluid rdfs:subClassOf cfo:material .
+
+cfo:liquid rdfs:subClassOf cfo:fluid .
+cfo:gas rdfs:subClassOf cfo:fluid .
+cfo:electrolyte rdfs:subClassOf cfo:liquid .
+
+
+cfo:TiO2 rdfs:subClassOf cfo:inorganic .
+cfo:TiO2 rdfs:subClassOf cfo:solid .
+cfo:Cr2O3 rdfs:subClassOf cfo:inorganic .
+cfo:Cr2O3 rdfs:subClassOf cfo:solid .
+cfo:Fe2O3 rdfs:subClassOf cfo:inorganic .
+cfo:Fe2O3 rdfs:subClassOf cfo:solid .
+
+cfo:anodizing rdfs:subClassOf cfo:process .
+cfo:washing rdfs:subClassOf cfo:process .
+cfo:pickling rdfs:subClassOf cfo:process .
+cfo:sol-gel_coating rdfs:subClassOf cfo:process .
+cfo:etching rdfs:subClassOf cfo:process .

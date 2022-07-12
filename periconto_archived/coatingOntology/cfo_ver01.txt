@@ -1,0 +1,85 @@
+coatedSystem isA Class
+substrate subClassOf coatedSystem
+preTreatedSurface subClassOf coatedSystem
+coatingLayer subClassOf coatedSystem
+interface subClassOf coatedSystem
+
+binder subClassOf coatingLayer
+pigment subClassOf coatingLayer
+extender subClassOf coatingLayer
+dye subClassOf coatingLayer
+additive subClassOf coatingLayer
+
+colour subClassOf pigment
+protectiv subClassOf pigment
+
+material isA Class
+colour relatesTo material
+protectiv relatesTo material
+defoamer relatesTo material
+wettingAgent relatesTo material
+surfaceActive relatesTo material
+dryer relatesTo material
+catalyst relatesTo material
+preservative relatesTo material
+lightStabilizer relatesTo material
+
+defoamer isSubClassOf additive 
+wettingAgent subClassOf additive
+surfaceActive subClassOf additive
+rheology subClassOf additive
+dryer subClassOf additive
+catalyst subClassOf additve
+preservative subClassOf additive
+LightStabilizer subClassOf additive
+
+organic subClassOf material
+inorganic subClassOf material
+solid subClassOf material
+fluid subClassOf material
+
+liquid subClassOf fluid
+gas subClassOf fluid
+electrolyte subClassOf liquid
+
+TiO2 isA inorganic
+TiO2 isA solid
+Cr2O3 isA inorganic
+Cr2O3 isA solid
+Fe2O3 isA inorganic
+Fe2O3 isA solid
+
+TiO2 hasUse colour
+TiO2 hasElucidation "Titanium dioxide is used as a pigment to add colour to a coating."
+TiO2 hasLabel Titanium Dioxide
+TiO2 alsoKnown Titania
+TiO2 hasStructure rutile
+TiO2 hasStructure anatase
+
+Cr2O3 hasUse protectiv
+Cr2O3 hasElucidation "Chromium Oxide is widely used in Pigment as protetive"
+Cr2O3 hasLabel chromium(III) oxide
+Cr2O3 alsoKnown chromia
+Cr2O3 alsoKnown chromeGreen
+Cr2O3 alsoKnown chromiumSesquioxide
+cr2O3 alsoKnown Eskolaite
+
+Fe2O3 hasUse colour
+Fe2O3 hasElucidation ""
+Fe2O3 hasLabel IronOxide
+Cr2O3 alsoKnown IronOxideNanoPowder
+Fe2O3 hasProperty non-toxic
+
+
+process isA Class
+process relatesTo substrate
+process relatesTo preTreatedSurface
+process relatesTo coatingLayer
+process relatesTo interface
+
+anodizing subClassOf process
+washing subClassOf process
+pickling subClassOf process
+solGelCoating subClassOf process
+etching subClassOf process
+
