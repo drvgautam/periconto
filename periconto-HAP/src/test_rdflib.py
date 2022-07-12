@@ -12,3 +12,5 @@ g.add((foobar.anotherthing, RDF.type, Literal('Blubb')))
 g.add((foobar.anotherthing, foobar.contains, Literal('another property')))
 
 print(g.serialize(format='turtle'))
+
+# just to test the merge feature
