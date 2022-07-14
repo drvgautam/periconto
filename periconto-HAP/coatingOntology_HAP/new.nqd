@@ -1,0 +1,4 @@
+"a" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "coating" "coating" .
+"c" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "coating" "coating" .
+"b" <http://www.w3.org/2000/01/rdf-schema#subClassOf> "coating" "coating" .
+

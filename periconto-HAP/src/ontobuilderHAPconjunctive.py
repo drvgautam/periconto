@@ -40,8 +40,14 @@ MYPredicates = {RDFS.subClassOf: "is_a_subclass_of",
 
 LINK_COLOUR = QtGui.QColor(255, 100, 5, 255)
 
-TTLFile = os.path.join("../coatingOntology_HAP", "%s.json" % "HAP")
-TTLDirectory = "../coatingOntology_HAP"
+# Absolute paths of ontology directory and ontology file
+#TODO allow ontoloyg filepath to take other file formats
+APP_PATH = os.path.abspath("..")
+ONTOLOGY_DIR = os.path.realpath(os.path.join(APP_PATH, "coatingOntology_HAP"))
+ONTOLOGY_FILE = os.path.join(ONTOLOGY_DIR, "%s.json" % "HAP")
+# ONTOLOGY_DIR = "../coatingOntology_HAP"
+
+
 
 
 def plot(graph, class_names=[]):
@@ -176,7 +182,7 @@ class OntobuilderUI(QMainWindow):
     self.class_path = []
     self.link_lists = {}
     self.class_definition_sequence = []
-    self.TTLfile = TTLFile
+    self.ONTOLOGY_FILE = ONTOLOGY_FILE
 
     #
     # coating = Graph()
@@ -276,7 +282,7 @@ class OntobuilderUI(QMainWindow):
     name = dialog.getText()
     if name:
       fname = name.split(".")[0] + ".ttl"
-      self.TTLFile = os.path.join(TTLDirectory, fname)
+      self.ONTOLOGY_FILE = os.path.join(ONTOLOGY_DIR, fname)
     else:
       self.close()
 
@@ -463,33 +469,45 @@ class OntobuilderUI(QMainWindow):
     # NOTE: this does work fine, but one cannot read it afterwards. Issue is the parser. It assumes that the subject and
     # NOTE: object are in the namespace.
 
-    # conjunctiveGraph = ConjunctiveGraph('Memory')
-    # for cl in self.class_definition_sequence:
-    #   uri = Literal(cl)
-    #   for s,p,o in self.CLASSES[cl].triples((None,None,None)):
-    #     print(s,p,o)
-    #     conjunctiveGraph.get_context(uri).add([s,p,o])
-    #
-    # print("debugging")
-    #
-    # f = self.TTLFile.split(".")[0] + ".nqd"
-    # inf = open(f,'w')
-    # inf.write(conjunctiveGraph.serialize(format="nquads"))
-    # inf.close()
-    #
-    # print("written to file ", f)
+    conjunctiveGraph = ConjunctiveGraph('Memory')
+    for cl in self.class_definition_sequence:
+      uri = Literal(cl)
+      for s,p,o in self.CLASSES[cl].triples((None,None,None)):
+        print(s,p,o)
+        conjunctiveGraph.get_context(uri).add([s,p,o])
+    
+    print("debugging")
+
+    ttl_file_name = self.ONTOLOGY_FILE
+    print(ttl_file_name)
+    
+    f = self.ONTOLOGY_FILE.split(".")[0] + ".nqd"
+  
+    print('file name is:', f)
+    
+    inf = open(f,'w')
+    inf.write(conjunctiveGraph.serialize(format="nquads"))
+    inf.close()
+    
+    print("written to file ", f)
 
 
     # Note: saving it with the RDF syntax did not work for loading. Needs more reading...?
 
-    graphs = {}
-    for cl in self.class_definition_sequence:
-      graphs[cl] = []
-      for  s,p,o  in self.CLASSES[cl].triples((None,None,None)):
-        my_p = MYPredicates[p]
-        graphs[cl].append((s,my_p,o))
 
-    saveWithBackup(graphs, TTLFile)
+  ##saving graph in the json format
+
+    # graphs = {}
+    # for cl in self.class_definition_sequence:
+    #   graphs[cl] = []
+    #   for  s,p,o  in self.CLASSES[cl].triples((None,None,None)):
+    #     my_p = MYPredicates[p]
+    #     graphs[cl].append((s,my_p,o))
+
+    # saveWithBackup(graphs, ONTOLOGY_FILE)
+
+  ## 
+
 
     # graphs = Graph("Memory")
     # for cl in self.class_definition_sequence:
@@ -497,10 +515,10 @@ class OntobuilderUI(QMainWindow):
     #   for t in self.CLASSES[cl].triples((None, None, None)):
     #     graphs.add(t)
     #
-    # self.TTLFile = self.TTLFile.split(".ttl")[0] + ".nquads"
+    # self.ONTOLOGY_FILE = self.ONTOLOGY_FILE.split(".ttl")[0] + ".nquads"
     #
-    # graphs.serialize(TTLFile, format="nquads")
-    # saveWithBackup(graphs, TTLFile)
+    # graphs.serialize(ONTOLOGY_FILE, format="nquads")
+    # saveWithBackup(graphs, ONTOLOGY_FILE)
     # self.changed = False
 
     self.changed = False
@@ -513,18 +531,18 @@ class OntobuilderUI(QMainWindow):
     options = QFileDialog.Options()
     dialog = QFileDialog.getOpenFileName(None,
                                          "Load Ontology",
-                                         TTLDirectory,
+                                         ONTOLOGY_DIR,
                                          "",
                                          # "Turtle files (*.ttl)",
                                          "triple files (*.json",
                                          # options=options
                                          )
-    self.TTLFile = dialog[0]
+    self.ONTOLOGY_FILE = dialog[0]
     if dialog[0] == "":
       self.close()
 
     print("debugging")
-    graphs = getData(self.TTLFile)
+    graphs = getData(self.ONTOLOGY_FILE)
     self.CLASSES = {}
     for g in graphs:
       self.class_definition_sequence.append(g)
@@ -563,7 +581,7 @@ class OntobuilderUI(QMainWindow):
 
     dot = plot(graph_overall, self.class_names)
     print("debugging -- dot")
-    dot.render("graph", directory=TTLDirectory)
+    dot.render("graph", directory=ONTOLOGY_DIR)
     dot.view()
 
 
