@@ -1,0 +1,56 @@
+{
+  "coatedProduct": [
+    [
+      "mat",
+      "link_to_class",
+      "hello"
+    ],
+    [
+      "klem",
+      "is_a_subclass_of",
+      "coatedProduct"
+    ],
+    [
+      "hello",
+      "is_a_subclass_of",
+      "coatedProduct"
+    ]
+  ],
+  "mat": [
+    [
+      "comment",
+      "string",
+      "string"
+    ],
+    [
+      "mat",
+      "value",
+      "myurl"
+    ],
+    [
+      "jacob",
+      "is_a_subclass_of",
+      "mat"
+    ],
+    [
+      "jacob",
+      "value",
+      "elucidation"
+    ],
+    [
+      "elucidation",
+      "string",
+      "string"
+    ],
+    [
+      "myurl",
+      "string",
+      "string"
+    ],
+    [
+      "mat",
+      "value",
+      "comment"
+    ]
+  ]
+}

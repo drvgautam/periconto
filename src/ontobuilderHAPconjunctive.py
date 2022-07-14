@@ -15,11 +15,12 @@ So the approach is to use an internal representation of the predicates and trans
 import json
 import os
 
+from graphviz import Digraph
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import *
-from rdflib import Graph, ConjunctiveGraph, RDF, BNode, Literal, RDFS, Dataset
-from rdflib.plugins.stores.memory import Memory
-
+from rdflib import Graph
+from rdflib import Literal
+from rdflib import RDFS, XSD, RDF
 
 # from graphHAP import Graph
 from ontologybuilderHAP_gui import Ui_MainWindow
@@ -28,17 +29,36 @@ from resources.resources_icons import roundButton
 from resources.single_list_selector_impl import SingleListSelector
 from resources.ui_string_dialog_impl import UI_String
 
-from graphviz import Digraph
+# from rdflib import Graph, ConjunctiveGraph, RDF, BNode, Literal, RDFS, Dataset
+# from rdflib.plugins.stores.memory import Memory
 
 ROOT_CLASS = "coating"
-PREDICATES = {
-        "subclass": RDFS.subClassOf,   #"is_a_subclass_of",
-        "link"    : RDFS.isDefinedBy, #"link_to_class"
+ROOT_CLASS = "coatedProduct"
+
+RDFSTerms = {
+        "is_a_subclass_of": RDFS.subClassOf,
+        "link_to_class"   : RDFS.isDefinedBy,
+        "value"           : RDF.value,
+        "integer"         : XSD.integer,
+        "string"          : XSD.string,
         }
-MYPredicates = {RDFS.subClassOf: "is_a_subclass_of",
-                RDFS.isDefinedBy: "link_to_class"}
+
+MYTerms = {v: k for k, v in RDFSTerms.items()}
+
+PRIMITIVES = ["integer", "string"]
+
+ENDPOINTS = ["link_to_class", "value"]#, "integer", "string"]
+
+COLOURS = {
+        "is_a_subclass_of": QtGui.QColor(255, 255, 255, 255),
+        "link_to_class"   : QtGui.QColor(255, 100, 5, 255),
+        "value"           : QtGui.QColor(255, 3, 23, 255),
+        "integer"         : QtGui.QColor(255, 3, 23, 255),
+        "string"          : QtGui.QColor(255, 3, 23, 255),
+        }
 
 LINK_COLOUR = QtGui.QColor(255, 100, 5, 255)
+PRIMITIVE_COLOUR = QtGui.QColor(255, 3, 23, 255)
 
 TTLFile = os.path.join("../coatingOntology_HAP", "%s.json" % "HAP")
 TTLDirectory = "../coatingOntology_HAP"
@@ -50,12 +70,14 @@ def plot(graph, class_names=[]):
   """
   dot = Digraph()
   # Add nodes 1 and 2
-  for s, p, o in graph.triples((None,None,None)):
+  for s, p, o in graph.triples((None, None, None)):
     ss = str(s)
     sp = str(p)
     so = str(o)
     if ss in class_names:
       dot.node(ss, color='red', shape="rectangle")
+    elif so in PRIMITIVES:
+      dot.node(so, color='green', shape="rectangle")
     else:
       dot.node(ss)
 
@@ -64,11 +86,15 @@ def plot(graph, class_names=[]):
     else:
       dot.node(so)
 
-    my_p = MYPredicates[p]
-    dot.edge(ss, so, label=my_p)
+    my_p = MYTerms[p]
+    if my_p in PRIMITIVES+ENDPOINTS:
+      dot.edge(so,ss,label=my_p)
+    else:
+      dot.edge(ss, so, label=my_p)
 
   # Visualize the graph
   return dot
+
 
 def putData(data, file_spec, indent="  "):
   print("writing to file: ", file_spec)
@@ -115,8 +141,8 @@ def saveBackupFile(path):
 
 
 def saveWithBackup(data, path):
-  print("saving")
-  old_path, new_path, next_path = saveBackupFile(path)
+  if os.path.exists(path):
+    old_path, new_path, next_path = saveBackupFile(path)
   putData(data, path)
 
 
@@ -129,12 +155,14 @@ def getData(file_spec):
   else:
     return None
 
+
 def makeRDFCompatible(identifier):
   """
   To be adapted to imported notation.
   For now it generates rdflib Literals
   """
   return Literal(identifier)
+
 
 class OntobuilderUI(QMainWindow):
   def __init__(self):
@@ -155,13 +183,14 @@ class OntobuilderUI(QMainWindow):
             "save"               : self.ui.pushSave,
             "exit"               : self.ui.pushExit,
             "add_subclass"       : self.ui.pushAddSubclass,
+            "add_primitive"      : self.ui.pushAddPrimitive,
             "link_new_class"     : self.ui.pushAddNewClass,
             "link_existing_class": self.ui.pushAddExistingClass,
             "remove"             : self.ui.pushRemoveNode
             }
     w = 150
     h = 25
-    for i in ["add_subclass", "link_new_class", "link_existing_class"]:
+    for i in ["add_subclass", "add_primitive", "link_new_class", "link_existing_class"]:
       self.buttons[i].setFixedSize(w, h)
 
     self.ontology_graph = None
@@ -172,6 +201,7 @@ class OntobuilderUI(QMainWindow):
     self.current_class = None
     self.current_subclass = None
     self.subclass_names = {}
+    self.primitives = {}
     self.class_names = []
     self.class_path = []
     self.link_lists = {}
@@ -210,6 +240,7 @@ class OntobuilderUI(QMainWindow):
       show = ["save",
               "exit",
               "add_subclass",
+              "add_primitive",
               "link_new_class",
               "link_existing_class",
               ]
@@ -217,11 +248,13 @@ class OntobuilderUI(QMainWindow):
       show = ["save",
               "exit",
               "add_subclass",
+              "add_primitive",
               ]
     elif state == "no_existing_classes":
       show = ["save",
               "exit",
               "add_subclass",
+              "add_primitive",
               "link_new_class",
               ]
     elif state == "occupied":
@@ -248,38 +281,64 @@ class OntobuilderUI(QMainWindow):
     rootItem.setSelected(True)
     widget.addTopLevelItem(rootItem)
     self.current_class = origin
-    self.__makeTree(origin=Literal(origin), stack=[], parent=rootItem)
+    self.__makeTree(origin=Literal(origin), subject_stack=[], parent=rootItem)
     widget.show()
     widget.expandAll()
     self.current_subclass = origin
     self.__ui_state("show_tree")
 
-
-
-  def __makeTree(self, origin=None, stack=[], parent=None):
+  def __makeTree(self, origin=None, subject_stack=[], object_stack=[], parent=None, previous_parent=None):
 
     graph = self.CLASSES[self.current_class]
-    for subject, predicate, object in graph.triples((None, None, origin)):
-      if subject not in stack:
-        print("add %s <-- %s" % (object, subject))
+    # print(graph.serialize(format='turtle'))
+    # print("debugging", origin)
+    for subject, predicate, object_ in graph.triples((None, None, origin)):
+      if str(subject) not in subject_stack:
+        print("add %s <-- %s" % (object_, subject))
         item = QTreeWidgetItem(parent)
-        if predicate == PREDICATES["link"]:
-          item.setBackground(0, LINK_COLOUR)
-        else:
-          stack.append(subject)
+        item.setBackground(0, COLOURS[MYTerms[predicate]])
+        # if predicate == RDFSTerms["link_to_class"]:
+        #   item.setBackground(0, LINK_COLOUR)
+        # if MYTerms[predicate] not in ENDPOINTS:
+        # else:
+        subject_stack.append(str(subject))
         item.setText(0, subject)
-        self.__makeTree(origin=Literal(subject), stack=stack, parent=item)
+        if MYTerms[predicate] not in ENDPOINTS:
+          self.__makeTree(origin=Literal(subject), subject_stack=subject_stack, parent=item, previous_parent=parent)
+
+    for subject,predicate,object_ in graph.triples((None, RDFSTerms["value"], None)):
+      print("debugging -- second loop", subject, predicate, object_)
+      if str(object_) not in subject_stack:
+        print("add value %s <-- %s" % (object_, subject))
+        ancestors = {parent.text(0): parent,
+                previous_parent.text(0): previous_parent}
+        item = QTreeWidgetItem(ancestors[str(subject)])
+        item.setBackground(0, COLOURS[MYTerms[predicate]])
+        subject_stack.append(str(object_))
+        item.setText(0, object_)
+        for primitive in PRIMITIVES:
+          for sub,pred,obj in graph.triples((object_, RDFSTerms[primitive], None)):
+            print("debugging -- primitives",sub,pred,obj)
+            item = QTreeWidgetItem(item)
+            item.setText(0, obj)
+
+
 
   def on_pushCreate_pressed(self):
-    dialog = UI_String("name for your ontology file", placeholdertext="file name extension is deault")
+    dialog = UI_String("name for your ontology file", placeholdertext="file name extension is default")
     dialog.exec_()
     name = dialog.getText()
     if name:
-      fname = name.split(".")[0] + ".ttl"
+      fname = name.split(".")[0] + ".json"
       self.TTLFile = os.path.join(TTLDirectory, fname)
     else:
       self.close()
 
+    # dialog = UI_String("root name for your ontology", placeholdertext="root name")
+    # dialog.exec_()
+    # root_class = dialog.getText()
+    # if root_class:
+    #   ROOT_CLASS = root_class
 
     self.CLASSES = {ROOT_CLASS: Graph('Memory', Literal(ROOT_CLASS))}
     self.__createTree(ROOT_CLASS)
@@ -290,27 +349,42 @@ class OntobuilderUI(QMainWindow):
     self.link_lists[ROOT_CLASS] = []
     self.ui.listClasses.addItems(self.class_path)
     self.class_definition_sequence.append(ROOT_CLASS)
+    self.primitives[ROOT_CLASS] = {ROOT_CLASS: []}
     self.changed = True
 
   def on_treeClass_itemPressed(self, item, column):
     text_ID = item.text(column)
     print("debugging -- ", text_ID)
-    self.current_subclass = text_ID
+    # self.current_subclass = text_ID
 
     if text_ID in self.class_names:
+      print("debugging -- is class", text_ID)
       self.__ui_state("selected_class")
       if self.current_class != text_ID:
         self.__shiftClass(text_ID)
     elif self.__islinked(text_ID):
+      print("debugging -- is linked", text_ID)
       self.__ui_state("occupied")
-      pass
-    else:
-
+    elif self.__isSubClass(text_ID):
+      print("debugging -- it is a subclass", text_ID)
+      self.__ui_state("selected_subclass")
+      #   self.__ui_state("")
+      # else:
       if not self.__permittedClasses():
         self.__ui_state("no_existing_classes")
       else:
         self.__ui_state("selected_subclass")
       self.current_subclass = text_ID
+    elif self.__isPrimitive(text_ID):
+      print("debugging -- is a primitive")
+    else:
+      print("should not come here")
+
+  def __isSubClass(self, ID):
+    return ID in self.subclass_names[self.current_class]
+
+  def __isPrimitive(self, text_ID):
+    print("debugging -- is primitive", text_ID)
 
   def __islinked(self, ID):
     for cl in self.link_lists:
@@ -332,11 +406,12 @@ class OntobuilderUI(QMainWindow):
 
     # keep track of names
     self.subclass_names[self.current_class].append(subclass_ID)
+    self.primitives[self.current_class][self.current_subclass] = []
 
     # add to graph
     subject = makeRDFCompatible(subclass_ID)
     object = makeRDFCompatible(self.current_subclass)
-    self.CLASSES[self.current_class].add((subject, PREDICATES["subclass"], object))
+    self.CLASSES[self.current_class].add((subject, RDFSTerms["is_a_subclass_of"], object))
 
     # generate GUI tree
     parent_item = self.ui.treeClass.currentItem()
@@ -344,6 +419,44 @@ class OntobuilderUI(QMainWindow):
     item.setText(0, subclass_ID)
     self.ui.treeClass.expandAll()
     self.changed = True
+
+  def on_pushAddPrimitive_pressed(self):
+    print("debugging -- add primitive")
+    forbidden = self.subclass_names[self.current_class]  # TODO: no second linked primitive allowed
+    dialog = UI_String("name for primitive", limiting_list=forbidden)
+    dialog.exec_()
+    primitive_ID = dialog.getText()
+    if not primitive_ID:
+      return
+
+    permitted_classes = PRIMITIVES
+    dialog = SingleListSelector(permitted_classes)
+    dialog.exec_()
+    primitive_class = dialog.getSelection()
+    print("debugging")
+    if not primitive_class:
+      return
+
+    # add to graph
+    item = self.__addItemToTree(primitive_ID, "value", self.current_subclass)
+    self.__addItemToTree(primitive_class, primitive_class, primitive_ID, parent_item=item)
+    if self.current_subclass not in self.primitives[self.current_class]:
+      self.primitives[self.current_class][self.current_subclass] = []
+    self.primitives[self.current_class][self.current_subclass].append(primitive_ID)
+
+  def __addItemToTree(self, internal_object, predicate, internal_subject, parent_item=None):
+    object = makeRDFCompatible(internal_object)
+    subject = makeRDFCompatible(internal_subject)
+    self.CLASSES[self.current_class].add((subject, RDFSTerms[predicate], object))
+    # generate GUI tree
+    if not parent_item:
+      parent_item = self.ui.treeClass.currentItem()
+    item = QTreeWidgetItem(parent_item)
+    item.setText(0, internal_object)
+    item.setBackground(0, PRIMITIVE_COLOUR)
+    self.ui.treeClass.expandAll()
+    self.changed = True
+    return item
 
   def on_pushAddNewClass_pressed(self):
     print("debugging -- add class")
@@ -357,21 +470,24 @@ class OntobuilderUI(QMainWindow):
 
     self.CLASSES[class_ID] = Graph('Memory', Literal(class_ID))
     self.class_definition_sequence.append(class_ID)
+    self.subclass_names[class_ID] = []
+    self.primitives[class_ID]={class_ID : []}
 
     # make link
     subject = makeRDFCompatible(class_ID)
     object = makeRDFCompatible(self.current_subclass)
-    self.CLASSES[self.current_class].add((subject, PREDICATES["link"], object))
+    self.CLASSES[self.current_class].add((subject, RDFSTerms["link_to_class"], object))
 
     if class_ID not in self.link_lists:
       self.link_lists[class_ID] = []
     self.link_lists[class_ID].append((class_ID, self.current_class, self.current_subclass))
 
     self.__createTree(class_ID)
-    self.subclass_names[class_ID] = []
     self.class_names.append(class_ID)
     self.__addToClassPath(addclass=class_ID)
     self.current_class = class_ID
+    self.class_definition_sequence.append(class_ID)
+    self.primitives[class_ID] = {"root": []}
     self.changed = True
 
   def on_pushAddExistingClass_pressed(self):
@@ -390,7 +506,7 @@ class OntobuilderUI(QMainWindow):
       class_ID = selection
       subject = makeRDFCompatible(class_ID)
       object = makeRDFCompatible(self.current_subclass)
-      self.CLASSES[self.current_class].add((subject, PREDICATES["link"], object))
+      self.CLASSES[self.current_class].add((subject, RDFSTerms["link_to_class"], object))
 
       if class_ID not in self.link_lists:
         self.link_lists[class_ID] = []
@@ -430,6 +546,7 @@ class OntobuilderUI(QMainWindow):
     self.__shiftClass(class_ID)
 
   def __shiftClass(self, class_ID):
+    print("debugging ---------------")
     self.current_class = class_ID
     self.__createTree(class_ID)
     if class_ID not in self.class_path:
@@ -479,17 +596,16 @@ class OntobuilderUI(QMainWindow):
     #
     # print("written to file ", f)
 
-
     # Note: saving it with the RDF syntax did not work for loading. Needs more reading...?
 
     graphs = {}
     for cl in self.class_definition_sequence:
       graphs[cl] = []
-      for  s,p,o  in self.CLASSES[cl].triples((None,None,None)):
-        my_p = MYPredicates[p]
-        graphs[cl].append((s,my_p,o))
+      for s, p, o in self.CLASSES[cl].triples((None, None, None)):
+        my_p = MYTerms[p]
+        graphs[cl].append((s, my_p, o))
 
-    saveWithBackup(graphs, TTLFile)
+    saveWithBackup(graphs, self.TTLFile)
 
     # graphs = Graph("Memory")
     # for cl in self.class_definition_sequence:
@@ -504,7 +620,6 @@ class OntobuilderUI(QMainWindow):
     # self.changed = False
 
     self.changed = False
-
 
   def saveAs(self):
     print("not implemented")
@@ -530,23 +645,39 @@ class OntobuilderUI(QMainWindow):
       self.class_definition_sequence.append(g)
       self.class_names.append(g)
       self.subclass_names[g] = []
+      # self.primitives[g] = {g: []}
       self.link_lists[g] = []
       self.CLASSES[g] = Graph()
-      for s, p, o in graphs[g]:
+      for s, p_internal, o in graphs[g]:
         subject = makeRDFCompatible(s)
         object = makeRDFCompatible(o)
-        if p == "is_a_subclass_of":
-          p = PREDICATES["subclass"]
-        if p == "link_to_class":
-          p = PREDICATES["link"]
+        p = RDFSTerms[p_internal]
+        # if p == "is_a_subclass_of":
+        #   p = RDFSTerms["is_a_subclass_of"]
+        # if p == "link_to_class":
+        #   p = RDFSTerms["link_to_class"]
         self.CLASSES[g].add((subject, p, object))
         # s, p, o = t
-        if p == PREDICATES["subclass"]:
+        if p == RDFSTerms["is_a_subclass_of"]:
           self.subclass_names[g].append(s)
-        elif p == PREDICATES["link"]:
+        elif p == RDFSTerms["link_to_class"]:
           if g not in self.link_lists:
             self.link_lists[g] = []
           self.link_lists[g].append((s, g, o))
+        elif p == RDFSTerms["value"]:
+          if g not in self.primitives:
+            self.primitives[g] = {}
+          if o not in self.primitives[g]:
+            self.primitives[g][o] = [s]
+          else:
+            self.primitives[g][o].append(s)
+        elif p_internal in PRIMITIVES:
+          if g not in self.primitives:
+            self.primitives[g] = {}
+          if o not in self.primitives[g]:
+            self.primitives[g][o] = [s]
+          else:
+            self.primitives[g][o].append(s)
 
     self.current_class = ROOT_CLASS
     self.class_path = [ROOT_CLASS]
@@ -558,7 +689,7 @@ class OntobuilderUI(QMainWindow):
 
     graph_overall = Graph()
     for cl in self.CLASSES:
-      for t in self.CLASSES[cl].triples((None,None,None)):
+      for t in self.CLASSES[cl].triples((None, None, None)):
         graph_overall.add(t)
 
     dot = plot(graph_overall, self.class_names)

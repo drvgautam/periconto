@@ -59,7 +59,7 @@
       <rect>
        <x>10</x>
        <y>450</y>
-       <width>521</width>
+       <width>951</width>
        <height>91</height>
       </rect>
      </property>
@@ -71,7 +71,7 @@
        <rect>
         <x>10</x>
         <y>30</y>
-        <width>466</width>
+        <width>721</width>
         <height>51</height>
        </rect>
       </property>
@@ -80,6 +80,26 @@
         <widget class="QPushButton" name="pushAddSubclass">
          <property name="text">
           <string>add subclass</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_8">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushAddPrimitive">
+         <property name="text">
+          <string>add primitive</string>
          </property>
         </widget>
        </item>
