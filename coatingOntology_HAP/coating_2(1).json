@@ -1,0 +1,25 @@
+{
+  "coatedProduct": [
+    [
+      "substrate",
+      "is_a_subclass_of",
+      "coatedProduct"
+    ],
+    [
+      "preTreadedSurface",
+      "is_a_subclass_of",
+      "substrate"
+    ],
+    [
+      "surfaceProcessing",
+      "link_to_class",
+      "preTreadedSurface"
+    ],
+    [
+      "coatingLayer",
+      "is_a_subclass_of",
+      "coatedProduct"
+    ]
+  ],
+  "surfaceProcessing": []
+}

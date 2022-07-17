@@ -1,0 +1,31 @@
+{
+  "coatedProduct": [
+    [
+      "surfaceTreatmentProcess",
+      "link_to_class",
+      "preTreatedSurface"
+    ],
+    [
+      "preTreatedSurface",
+      "is_a_subclass_of",
+      "substrate"
+    ],
+    [
+      "substrate",
+      "is_a_subclass_of",
+      "coatedProduct"
+    ]
+  ],
+  "surfaceTreatmentProcess": [
+    [
+      "solGelCoating",
+      "is_a_subclass_of",
+      "surfaceTreatmentProcess"
+    ],
+    [
+      "washing",
+      "is_a_subclass_of",
+      "surfaceTreatmentProcess"
+    ]
+  ]
+}

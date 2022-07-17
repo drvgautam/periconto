@@ -1,0 +1,20 @@
+{
+  "coatedProduct": [
+    [
+      "c",
+      "link_to_class",
+      "b"
+    ],
+    [
+      "b",
+      "is_a_subclass_of",
+      "coatedProduct"
+    ],
+    [
+      "a",
+      "is_a_subclass_of",
+      "coatedProduct"
+    ]
+  ],
+  "c": []
+}
