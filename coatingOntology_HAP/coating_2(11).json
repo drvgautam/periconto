@@ -1,11 +1,6 @@
 {
   "coatedProduct": [
     [
-      "surfaceTreatmentProcess",
-      "link_to_class",
-      "preTreatedSurface"
-    ],
-    [
       "rheologyAgent",
       "is_a_subclass_of",
       "additive"
@@ -16,7 +11,52 @@
       "sequencePosition"
     ],
     [
+      "preservative",
+      "is_a_subclass_of",
+      "additive"
+    ],
+    [
+      "substrate",
+      "is_a_subclass_of",
+      "coatedProduct"
+    ],
+    [
+      "surfaceTreatmentProcess",
+      "link_to_class",
+      "preTreatedSurface"
+    ],
+    [
       "dye",
+      "is_a_subclass_of",
+      "additive"
+    ],
+    [
+      "lightStabiliser",
+      "is_a_subclass_of",
+      "additive"
+    ],
+    [
+      "sequencePosition",
+      "integer",
+      "integer"
+    ],
+    [
+      "catalyst",
+      "is_a_subclass_of",
+      "additive"
+    ],
+    [
+      "preTreatedSurface",
+      "is_a_subclass_of",
+      "substrate"
+    ],
+    [
+      "additive",
+      "is_a_subclass_of",
+      "coatingLayer"
+    ],
+    [
+      "wettingAgent",
       "is_a_subclass_of",
       "additive"
     ],
@@ -31,64 +71,24 @@
       "additive"
     ],
     [
-      "coatingLayer",
-      "is_a_subclass_of",
-      "coatedProduct"
-    ],
-    [
-      "wettingAgent",
-      "is_a_subclass_of",
-      "additive"
-    ],
-    [
-      "sequencePosition",
-      "integer",
-      "integer"
-    ],
-    [
       "dryingAgent",
       "is_a_subclass_of",
       "additive"
     ],
     [
-      "additive",
-      "is_a_subclass_of",
-      "coatingLayer"
-    ],
-    [
-      "substrate",
+      "coatingLayer",
       "is_a_subclass_of",
       "coatedProduct"
-    ],
-    [
-      "preservative",
-      "is_a_subclass_of",
-      "additive"
-    ],
-    [
-      "lightStabiliser",
-      "is_a_subclass_of",
-      "additive"
-    ],
-    [
-      "preTreatedSurface",
-      "is_a_subclass_of",
-      "substrate"
-    ],
-    [
-      "catalyst",
-      "is_a_subclass_of",
-      "additive"
     ]
   ],
   "surfaceTreatmentProcess": [
     [
-      "washing",
+      "pickling",
       "is_a_subclass_of",
       "surfaceTreatmentProcess"
     ],
     [
-      "pickling",
+      "etching",
       "is_a_subclass_of",
       "surfaceTreatmentProcess"
     ],
@@ -98,7 +98,7 @@
       "surfaceTreatmentProcess"
     ],
     [
-      "etching",
+      "washing",
       "is_a_subclass_of",
       "surfaceTreatmentProcess"
     ],
@@ -112,9 +112,6 @@
     "coatedProduct.catalyst": "hhh",
     "coatedProduct.rheologyAgent": "",
     "coatedProduct.lightStabiliser": "hhh\nasdfadf\n",
-    "coatedProduct.substrate": "",
-    "coatedProduct.dryingAgent": "drying agent\n",
-    "coatedProduct.wettingAgent": "",
-    "coatedProduct.coatingLayer": "coating Layer\n"
+    "coatedProduct.substrate": ""
   }
 }
