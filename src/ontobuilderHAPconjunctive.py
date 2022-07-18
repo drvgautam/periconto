@@ -39,13 +39,14 @@ RDFSTerms = {
         "is_a_subclass_of": RDFS.subClassOf,
         "link_to_class"   : RDFS.isDefinedBy,
         "value"           : RDF.value,
+        "comment"   : RDFS.comment,
         "integer"         : XSD.integer,
         "string"          : XSD.string,
         }
 
 MYTerms = {v: k for k, v in RDFSTerms.items()}
 
-PRIMITIVES = ["integer", "string"]
+PRIMITIVES = ["integer", "string", "comment"]
 
 ENDPOINTS = ["link_to_class", "value"]#, "integer", "string"]
 
@@ -53,6 +54,7 @@ COLOURS = {
         "is_a_subclass_of": QtGui.QColor(255, 255, 255, 255),
         "link_to_class"   : QtGui.QColor(255, 100, 5, 255),
         "value"           : QtGui.QColor(155, 155, 255),
+        "comment"   : QtGui.QColor(155, 155, 255),
         "integer"         : QtGui.QColor(155, 155, 255),
         "string"          : QtGui.QColor(255, 200, 200, 255),
         }
@@ -376,20 +378,21 @@ class OntobuilderUI(QMainWindow):
       dialog = UI_String("new name", placeholdertext=str(item.text(0)))
       dialog.exec_()
       new_name = dialog.getText()
-      graph = self.CLASSES[self.current_class]
-      for s,p,o in graph.triples((None, None, Literal(ID))):
-        print("debugging -- change triple", s,p,o)
-        self.CLASSES[self.current_class].remove((s,p,o))
-        object = makeRDFCompatible(new_name)
-        self.CLASSES[self.current_class].add((s, RDFSTerms["is_a_subclass_of"], object))
+      if new_name:
+        graph = self.CLASSES[self.current_class]
+        for s,p,o in graph.triples((None, None, Literal(ID))):
+          print("debugging -- change triple", s,p,o)
+          self.CLASSES[self.current_class].remove((s,p,o))
+          object = makeRDFCompatible(new_name)
+          self.CLASSES[self.current_class].add((s, RDFSTerms["is_a_subclass_of"], object))
 
-      for s,p,o in graph.triples((Literal(ID),None,None)):
-        print("debugging -- change triple", s,p,o) # add to graph
-        self.CLASSES[self.current_class].remove((s,p,o))
-        subject = makeRDFCompatible(new_name)
-        self.CLASSES[self.current_class].add((subject, RDFSTerms["is_a_subclass_of"], o))
+        for s,p,o in graph.triples((Literal(ID),None,None)):
+          print("debugging -- change triple", s,p,o) # add to graph
+          self.CLASSES[self.current_class].remove((s,p,o))
+          subject = makeRDFCompatible(new_name)
+          self.CLASSES[self.current_class].add((subject, RDFSTerms["is_a_subclass_of"], o))
 
-      self.__createTree(self.current_class)
+        self.__createTree(self.current_class)
 
 
   def __isSubClass(self, ID):
@@ -415,6 +418,9 @@ class OntobuilderUI(QMainWindow):
     dialog = UI_String("name for subclass", limiting_list=forbidden)
     dialog.exec_()
     subclass_ID = dialog.getText()
+
+    if not subclass_ID:
+      return
 
     # keep track of names
     self.subclass_names[self.current_class].append(subclass_ID)

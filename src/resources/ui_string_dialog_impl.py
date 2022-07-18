@@ -66,7 +66,7 @@ class UI_String(QtWidgets.QDialog):
     self.ui.pushAccept.hide()
 
     self.ui.pushAccept.clicked.connect(self.__accept)
-    self.ui.pushReject.clicked.connect(self.close)
+    self.ui.pushReject.clicked.connect(self.closeMe)
     self.ui.lineEdit.textEdited.connect(self.__changedText)
 
     self.ui.lineEdit.textChanged.connect(self.newText)
@@ -121,6 +121,10 @@ class UI_String(QtWidgets.QDialog):
     else:
       self.ui.pushAccept.setFocus()
       self.ui.lineEdit.setFocus()
+
+  def closeMe(self):
+    self.ui.lineEdit.clear()
+    self.close()
 
 
 # ============================ testing ======================
