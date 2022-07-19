@@ -48,7 +48,7 @@ RDFSTerms = {
 
 MYTerms = {v: k for k, v in RDFSTerms.items()}
 
-PRIMITIVES = ["integer", "string"]
+PRIMITIVES = ["integer", "string", "comment"]
 ADD_ELUCIDATIONS = ["class", "subclass", "value"]
 
 ENDPOINTS = ["link_to_class", "value"]  # , "integer", "string"]
@@ -60,6 +60,15 @@ COLOURS = {
         "comment"         : QtGui.QColor(155, 155, 255),
         "integer"         : QtGui.QColor(155, 155, 255),
         "string"          : QtGui.QColor(255, 200, 200, 255),
+        }
+
+DIRECTION = {
+        "is_a_subclass_of": 1,
+        "link_to_class"   : 1,
+        "value"           : -1,
+        "comment"         :-1,
+        "integer"         : -1,
+        "string"          : -1,
         }
 
 LINK_COLOUR = QtGui.QColor(255, 100, 5, 255)
@@ -92,7 +101,10 @@ def plot(graph, class_names=[]):
       dot.node(so)
 
     my_p = MYTerms[p]
-    dot.edge(ss, so, label=my_p)
+    if DIRECTION[my_p] == 1:
+      dot.edge(ss, so, label=my_p, color="blue")
+    else:
+      dot.edge(so, ss, label=my_p, color = "green" )
     # if my_p in PRIMITIVES+ENDPOINTS:
     #   dot.edge(so,ss,label=my_p)
     # else:
@@ -457,7 +469,7 @@ class OntobuilderUI(QMainWindow):
     for i in self.class_path[1:]:
       p = p + ".%s" % i
     if text_ID not in p:
-      item_name = self.selected_item.text(0)
+      item_name = text_ID
       p = p + ".%s" % item_name
     return p
 
@@ -498,26 +510,32 @@ class OntobuilderUI(QMainWindow):
     if not subclass_ID:
       return
 
+
     # keep track of names
     self.subclass_names[self.current_class].append(subclass_ID)
     self.primitives[self.current_class][self.current_subclass] = []
+
+    # elucidation
     p = self.__makePathName(subclass_ID)
     self.elucidations[p] = None
+    self.ui.textElucidation.clear()
 
     # add to graph
     subject = makeRDFCompatible(subclass_ID)
     object = makeRDFCompatible(self.current_subclass)
+    predicate = "is_a_subclass_of"
     self.CLASSES[self.current_class].add((subject, RDFSTerms["is_a_subclass_of"], object))
 
     # generate GUI tree
     parent_item = self.ui.treeClass.currentItem()
     item = QTreeWidgetItem(parent_item)
+    item.predicate = predicate
     item.setText(0, subclass_ID)
     self.ui.treeClass.expandAll()
     self.changed = True
 
   def on_pushAddPrimitive_pressed(self):
-    print("debugging -- add primitive")
+    # print("debugging -- add primitive")
     forbidden = self.subclass_names[self.current_class]  # TODO: no second linked primitive allowed
     dialog = UI_String("name for primitive", limiting_list=forbidden)
     dialog.exec_()
@@ -529,7 +547,7 @@ class OntobuilderUI(QMainWindow):
     dialog = SingleListSelector(permitted_classes)
     dialog.exec_()
     primitive_class = dialog.getSelection()
-    print("debugging")
+    # print("debugging")
     if not primitive_class:
       return
 
@@ -555,7 +573,7 @@ class OntobuilderUI(QMainWindow):
     return item
 
   def on_pushAddNewClass_pressed(self):
-    print("debugging -- add class")
+    # print("debugging -- add class")
 
     forbidden = sorted(self.class_names)
     dialog = UI_String("name for subclass", limiting_list=forbidden)
@@ -568,6 +586,10 @@ class OntobuilderUI(QMainWindow):
     self.class_definition_sequence.append(class_ID)
     self.subclass_names[class_ID] = []
     self.primitives[class_ID] = {class_ID: []}
+
+
+    # elucidation
+    self.ui.textElucidation.clear()
     self.elucidations[class_ID] = None
 
     # make link
@@ -588,15 +610,15 @@ class OntobuilderUI(QMainWindow):
     self.changed = True
 
   def on_pushAddExistingClass_pressed(self):
-    print("debugging -- pushExistingClass")
+    # print("debugging -- pushExistingClass")
     permitted_classes = self.__permittedClasses()
 
-    print("debugging -- ", permitted_classes)
+    # print("debugging -- ", permitted_classes)
     if permitted_classes:
       dialog = SingleListSelector(permitted_classes)
       dialog.exec_()
       selection = dialog.getSelection()
-      print("debugging")
+      # print("debugging")
       if not selection:
         return
 
@@ -639,11 +661,11 @@ class OntobuilderUI(QMainWindow):
 
   def on_listClasses_itemClicked(self, item):
     class_ID = item.text()
-    print("debugging -- ", class_ID)
+    # print("debugging -- ", class_ID)
     self.__shiftClass(class_ID)
 
   def __shiftClass(self, class_ID):
-    print("debugging ---------------")
+    # print("debugging ---------------")
     self.current_class = class_ID
     self.__createTree(class_ID)
     if class_ID not in self.class_path:
@@ -661,18 +683,20 @@ class OntobuilderUI(QMainWindow):
     if self.changed:
       dialog = makeMessageBox(message="save changes", buttons=["YES", "NO"])
       if dialog == "YES":
-        print("save")
+        # print("save")
         self.on_pushSave_pressed()
 
       elif dialog == "NO":
-        print("exit")
+        pass
+        # print("exit")
 
     else:
-      print("no changes")
+      pass
+      # print("no changes")
     self.close()
 
   def on_pushSave_pressed(self):
-    print("debugging -- pushSave")
+    # print("debugging -- pushSave")
 
     # NOTE: this does work fine, but one cannot read it afterwards. Issue is the parser. It assumes that the subject and
     # NOTE: object are in the namespace.
@@ -723,8 +747,8 @@ class OntobuilderUI(QMainWindow):
 
     self.changed = False
 
-  def saveAs(self):
-    print("not implemented")
+  # def saveAs(self):
+  #   print("not implemented")
 
   def on_pushLoad_pressed(self):
     options = QFileDialog.Options()
