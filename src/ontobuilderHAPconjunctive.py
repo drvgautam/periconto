@@ -34,8 +34,8 @@ from resources.ui_string_dialog_impl import UI_String
 # from rdflib import Graph, ConjunctiveGraph, RDF, BNode, Literal, RDFS, Dataset
 # from rdflib.plugins.stores.memory import Memory
 
-ROOT_CLASS = "coating"
-ROOT_CLASS = "coatedProduct"
+# self.root_class = "coating"
+# self.root_class = "coatedProduct"
 
 RDFSTerms = {
         "is_a_subclass_of": RDFS.subClassOf,
@@ -48,7 +48,8 @@ RDFSTerms = {
 
 MYTerms = {v: k for k, v in RDFSTerms.items()}
 
-PRIMITIVES = ["integer", "string", "comment"]
+PRIMITIVES = ["integer", "string"]
+ADD_ELUCIDATIONS = ["class", "subclass", "value"]
 
 ENDPOINTS = ["link_to_class", "value"]  # , "integer", "string"]
 
@@ -193,6 +194,7 @@ class OntobuilderUI(QMainWindow):
             "link_existing_class": self.ui.pushAddExistingClass,
             "remove"             : self.ui.pushRemoveNode,
             "elucidation"        : self.ui.groupElucidation,
+            "elucidation_button" : self.ui.pushAddElucidation,
             }
     w = 150
     h = 25
@@ -215,6 +217,8 @@ class OntobuilderUI(QMainWindow):
     self.TTLfile = TTLFile
     self.elucidations = {}
     self.selected_item = None
+    self.root_class = None
+    self.load_elucidation = True
 
   def __ui_state(self, state):
     # what to show
@@ -242,6 +246,15 @@ class OntobuilderUI(QMainWindow):
               "exit",
               "add_subclass",
               "add_primitive",
+              "elucidation",
+              ]
+    elif state == "selected_primitive":
+      show = ["save",
+              "exit",
+              ]
+    elif state == "value_selected":
+      show = ["save",
+              "exit",
               "elucidation",
               ]
     elif state == "no_existing_classes":
@@ -275,6 +288,7 @@ class OntobuilderUI(QMainWindow):
     rootItem.root = origin
     rootItem.setText(0, origin)
     rootItem.setSelected(True)
+    rootItem.predicate = None
     widget.addTopLevelItem(rootItem)
     self.current_class = origin
     tuples = self.__prepareTree(origin)
@@ -309,6 +323,7 @@ class OntobuilderUI(QMainWindow):
             item = QTreeWidgetItem(items[o])
             # print("debugging -- color",p )
             item.setBackground(0, COLOURS[p])
+            item.predicate = p
             stack.append(str(s))
             item.setText(0, s)
             items[s] = item
@@ -324,20 +339,30 @@ class OntobuilderUI(QMainWindow):
     else:
       self.close()
 
-    self.CLASSES = {ROOT_CLASS: Graph('Memory', Literal(ROOT_CLASS))}
-    self.__createTree(ROOT_CLASS)
-    self.current_class = ROOT_CLASS
-    self.subclass_names[ROOT_CLASS] = []
-    self.class_names.append(ROOT_CLASS)
-    self.class_path = [ROOT_CLASS]
-    self.link_lists[ROOT_CLASS] = []
+
+    dialog = UI_String("root identifier", placeholdertext="provide an identifier for the root")
+    dialog.exec_()
+    name = dialog.getText()
+    if not name:
+      self.close()
+    else:
+      self.root_class = name
+
+    self.CLASSES = {self.root_class: Graph('Memory', Literal(self.root_class))}
+    self.__createTree(self.root_class)
+    self.current_class = self.root_class
+    self.subclass_names[self.root_class] = []
+    self.class_names.append(self.root_class)
+    self.class_path = [self.root_class]
+    self.link_lists[self.root_class] = []
     self.ui.listClasses.addItems(self.class_path)
-    self.class_definition_sequence.append(ROOT_CLASS)
-    self.primitives[ROOT_CLASS] = {ROOT_CLASS: []}
+    self.class_definition_sequence.append(self.root_class)
+    self.primitives[self.root_class] = {self.root_class: []}
     self.changed = True
 
   def on_treeClass_itemPressed(self, item, column):
     text_ID = item.text(column)
+    predicate = item.predicate
     print("debugging -- ", text_ID)
     self.selected_item = item
     # self.current_subclass = text_ID
@@ -361,21 +386,27 @@ class OntobuilderUI(QMainWindow):
         print(">>>>selected_subclass")
         self.__ui_state("selected_subclass")
       self.current_subclass = text_ID
-    elif self.__isPrimitive(text_ID):
+    elif self.__isPrimitive(predicate):
       print("debugging -- is a primitive")
+      self.__ui_state("selected_primitive")
+    elif self.__isValue:
+      self.__ui_state("value_selected")
     else:
       print("should not come here")
 
-    p = self.__makePathName()
-    not_exist = None
-    try:
-      self.ui.textElucidation.setPlainText(self.elucidations[p])
-    except:
-      not_exist = p
-      self.ui.textElucidation.clear()
+    if  self.__hasElucidation(text_ID, predicate):
+      self.ui.pushAddElucidation.hide()
+      self.load_elucidation = True
+      p = self.__makePathName(text_ID)
+      not_exist = None
+      try:
+        self.ui.textElucidation.setPlainText(self.elucidations[p])
+      except:
+        not_exist = p
+        self.ui.textElucidation.clear()
 
-    if not_exist:
-      self.elucidations[not_exist] = ""
+      if not_exist:
+        self.elucidations[not_exist] = ""
 
   def on_treeClass_itemDoubleClicked(self, item, column):
     print("debugging -- double click", item.text(0))
@@ -401,19 +432,31 @@ class OntobuilderUI(QMainWindow):
 
         self.__createTree(self.current_class)
 
+  def on_textElucidation_textChanged(self):
+    # print("debugging change text")
+    if self.load_elucidation:
+      self.load_elucidation = False
+      self.ui.pushAddElucidation.hide()
+      return
+
+    self.ui.pushAddElucidation.show()
+
   def on_pushAddElucidation_pressed(self):
+    self.load_elucidation = True
+    self.ui.pushAddElucidation.hide()
     text_ID = self.selected_item.text(0)
-    if self.__isSubClass(text_ID) or self.__isClass(text_ID):
-      p = self.__makePathName()
+    predicate = self.selected_item.predicate
+    if self.__hasElucidation(text_ID, predicate):
+      p = self.__makePathName(text_ID)
       d = self.ui.textElucidation.toPlainText()
       self.elucidations[p] = d
       pass
 
-  def __makePathName(self):
-    p = ROOT_CLASS
+  def __makePathName(self, text_ID):
+    p = self.root_class
     for i in self.class_path[1:]:
       p = p + ".%s" % i
-    if self.current_subclass not in p:
+    if text_ID not in p:
       item_name = self.selected_item.text(0)
       p = p + ".%s" % item_name
     return p
@@ -426,6 +469,10 @@ class OntobuilderUI(QMainWindow):
 
   def __isPrimitive(self, text_ID):
     print("debugging -- is primitive", text_ID)
+    return text_ID in PRIMITIVES
+
+  def __isValue(self, predicate):
+    return predicate == "value"
 
   def __islinked(self, ID):
     for cl in self.link_lists:
@@ -435,6 +482,9 @@ class OntobuilderUI(QMainWindow):
             return True
 
     return False
+
+  def __hasElucidation(self, text_ID, predicate):
+    return self.__isClass(text_ID) or self.__isSubClass(text_ID) or self.__isValue(predicate)
 
   def on_pushAddSubclass_pressed(self):
     print("debugging -- add subclass")
@@ -451,7 +501,7 @@ class OntobuilderUI(QMainWindow):
     # keep track of names
     self.subclass_names[self.current_class].append(subclass_ID)
     self.primitives[self.current_class][self.current_subclass] = []
-    p = self.__makePathName()
+    p = self.__makePathName(subclass_ID)
     self.elucidations[p] = None
 
     # add to graph
@@ -645,6 +695,7 @@ class OntobuilderUI(QMainWindow):
 
     # Note: saving it with the RDF syntax did not work for loading. Needs more reading...?
 
+    data = {}
     graphs = {}
     for cl in self.class_definition_sequence:
       graphs[cl] = []
@@ -652,9 +703,11 @@ class OntobuilderUI(QMainWindow):
         my_p = MYTerms[p]
         graphs[cl].append((s, my_p, o))
 
-    graphs["elucidations"] = self.elucidations
+    data["root"] = self.root_class
+    data["graphs"] = graphs
+    data["elucidations"] = self.elucidations
 
-    saveWithBackup(graphs, self.TTLFile)
+    saveWithBackup(data, self.TTLFile)
 
     # graphs = Graph("Memory")
     # for cl in self.class_definition_sequence:
@@ -688,53 +741,54 @@ class OntobuilderUI(QMainWindow):
       self.close()
 
     # print("debugging")
-    graphs = getData(self.TTLFile)
+    data = getData(self.TTLFile)
+    self.root_class = data["root"]
+    self.elucidations = data["elucidations"]
+
+    graphs = data["graphs"]
     self.CLASSES = {}
     for g in graphs:
-      if g == "elucidations":
-        self.elucidations = graphs["elucidations"]
-      else:
-        self.class_definition_sequence.append(g)
-        self.class_names.append(g)
-        self.subclass_names[g] = []
-        self.primitives[g] = {g: []}
-        self.link_lists[g] = []
-        self.CLASSES[g] = Graph()
-        for s, p_internal, o in graphs[g]:
-          subject = makeRDFCompatible(s)
-          object = makeRDFCompatible(o)
-          p = RDFSTerms[p_internal]
-          self.CLASSES[g].add((subject, p, object))
-          # print("debugging -- graph added", g,s,p,o)
-          if p == RDFSTerms["is_a_subclass_of"]:
-            self.subclass_names[g].append(s)
-          elif p == RDFSTerms["link_to_class"]:
-            if g not in self.link_lists:
-              self.link_lists[g] = []
-            self.link_lists[g].append((s, g, o))
-          elif p == RDFSTerms["value"]:
-            if g not in self.primitives:
-              self.primitives[g] = {}
-            if o not in self.primitives[g]:
-              self.primitives[g][o] = [s]
-            else:
-              self.primitives[g][o].append(s)
-          elif p_internal in PRIMITIVES:
-            if g not in self.primitives:
-              self.primitives[g] = {}
-            if o not in self.primitives[g]:
-              self.primitives[g][o] = [s]
-            else:
-              self.primitives[g][o].append(s)
+      self.class_definition_sequence.append(g)
+      self.class_names.append(g)
+      self.subclass_names[g] = []
+      self.primitives[g] = {g: []}
+      self.link_lists[g] = []
+      self.CLASSES[g] = Graph()
+      for s, p_internal, o in graphs[g]:
+        subject = makeRDFCompatible(s)
+        object = makeRDFCompatible(o)
+        p = RDFSTerms[p_internal]
+        self.CLASSES[g].add((subject, p, object))
+        # print("debugging -- graph added", g,s,p,o)
+        if p == RDFSTerms["is_a_subclass_of"]:
+          self.subclass_names[g].append(s)
+        elif p == RDFSTerms["link_to_class"]:
+          if g not in self.link_lists:
+            self.link_lists[g] = []
+          self.link_lists[g].append((s, g, o))
+        elif p == RDFSTerms["value"]:
+          if g not in self.primitives:
+            self.primitives[g] = {}
+          if o not in self.primitives[g]:
+            self.primitives[g][o] = [s]
           else:
-            if o not in self.primitives[g]:
-              self.primitives[g][o] = [s]
-            else:
-              self.primitives[g][o].append(s)
+            self.primitives[g][o].append(s)
+        elif p_internal in PRIMITIVES:
+          if g not in self.primitives:
+            self.primitives[g] = {}
+          if o not in self.primitives[g]:
+            self.primitives[g][o] = [s]
+          else:
+            self.primitives[g][o].append(s)
+        else:
+          if o not in self.primitives[g]:
+            self.primitives[g][o] = [s]
+          else:
+            self.primitives[g][o].append(s)
 
-    self.current_class = ROOT_CLASS
-    self.class_path = [ROOT_CLASS]
-    self.__createTree(ROOT_CLASS)
+    self.current_class = self.root_class
+    self.class_path = [self.root_class]
+    self.__createTree(self.root_class)
     self.ui.listClasses.addItems(self.class_path)
     self.__ui_state("show_tree")
 

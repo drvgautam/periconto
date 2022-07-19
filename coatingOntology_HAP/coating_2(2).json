@@ -1,31 +1,124 @@
 {
-  "coatedProduct": [
-    [
-      "surfaceTreatmentProcess",
-      "link_to_class",
-      "preTreatedSurface"
+  "root": "coatedProduct",
+  "graphs": {
+    "coatedProduct": [
+      [
+        "substrate",
+        "is_a_subclass_of",
+        "coatedProduct"
+      ],
+      [
+        "additive",
+        "is_a_subclass_of",
+        "coatingLayer"
+      ],
+      [
+        "sequencePosition",
+        "integer",
+        "integer"
+      ],
+      [
+        "dye",
+        "is_a_subclass_of",
+        "additive"
+      ],
+      [
+        "preservative",
+        "is_a_subclass_of",
+        "additive"
+      ],
+      [
+        "defoamerAgent",
+        "is_a_subclass_of",
+        "additive"
+      ],
+      [
+        "dryingAgent",
+        "is_a_subclass_of",
+        "additive"
+      ],
+      [
+        "wettingAgent",
+        "is_a_subclass_of",
+        "additive"
+      ],
+      [
+        "coatingLayer",
+        "value",
+        "sequencePosition"
+      ],
+      [
+        "surfaceActiveAgent",
+        "is_a_subclass_of",
+        "additive"
+      ],
+      [
+        "preTreatedSurface",
+        "is_a_subclass_of",
+        "substrate"
+      ],
+      [
+        "catalyst",
+        "is_a_subclass_of",
+        "additive"
+      ],
+      [
+        "lightStabiliser",
+        "is_a_subclass_of",
+        "additive"
+      ],
+      [
+        "coatingLayer",
+        "is_a_subclass_of",
+        "coatedProduct"
+      ],
+      [
+        "rheologyAgent",
+        "is_a_subclass_of",
+        "additive"
+      ],
+      [
+        "surfaceTreatmentProcess",
+        "link_to_class",
+        "preTreatedSurface"
+      ]
     ],
-    [
-      "preTreatedSurface",
-      "is_a_subclass_of",
-      "substrate"
-    ],
-    [
-      "substrate",
-      "is_a_subclass_of",
-      "coatedProduct"
+    "surfaceTreatmentProcess": [
+      [
+        "pickling",
+        "is_a_subclass_of",
+        "surfaceTreatmentProcess"
+      ],
+      [
+        "washing",
+        "is_a_subclass_of",
+        "surfaceTreatmentProcess"
+      ],
+      [
+        "andozing",
+        "is_a_subclass_of",
+        "surfaceTreatmentProcess"
+      ],
+      [
+        "etching",
+        "is_a_subclass_of",
+        "surfaceTreatmentProcess"
+      ],
+      [
+        "solGelCoating",
+        "is_a_subclass_of",
+        "surfaceTreatmentProcess"
+      ]
     ]
-  ],
-  "surfaceTreatmentProcess": [
-    [
-      "solGelCoating",
-      "is_a_subclass_of",
-      "surfaceTreatmentProcess"
-    ],
-    [
-      "washing",
-      "is_a_subclass_of",
-      "surfaceTreatmentProcess"
-    ]
-  ]
+  },
+  "elucidations": {
+    "coatedProduct.catalyst": "hhh",
+    "coatedProduct.rheologyAgent": "",
+    "coatedProduct.lightStabiliser": "hhh\nasdfadf\n",
+    "coatedProduct.substrate": "",
+    "coatedProduct.dryingAgent": "drying agent\n",
+    "coatedProduct.wettingAgent": "",
+    "coatedProduct.coatingLayer": "coating Layer\n",
+    "coatedProduct": ""
+  }
 }
